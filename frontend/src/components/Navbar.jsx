@@ -6,7 +6,7 @@ export default function Navbar() {
 
   const links = [
     { path: '/', label: '查词', icon: '🔍' },
-    { path: '/wordbook', label: '单词本', icon: '📖' },
+    { path: '/wordbook', label: '收藏本', icon: '📖' },
     { path: '/review', label: '每日复习', icon: '📝' },
     { path: '/sentences', label: '句子收藏', icon: '💬' },
   ];

@@ -1,6 +1,12 @@
 .wordbook-page h1 {
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
+}
+
+.wordbook-sub {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .wordbook-search {
@@ -136,6 +142,70 @@
   text-decoration: none;
   border-radius: var(--radius-sm);
   font-weight: 500;
+}
+
+/* 句子条目（与单词条目并列展示） */
+.sentence-list-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border-left: 3px solid var(--primary);
+}
+
+.sentence-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.sentence-list-header:hover {
+  background: #f8fafc;
+}
+
+.sentence-list-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kind-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kind-badge.sentence {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.sentence-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.sentence-translation {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sentence-list-detail {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.sentence-word-item {
+  margin-bottom: 4px;
 }
 
 @media (max-width: 640px) {
