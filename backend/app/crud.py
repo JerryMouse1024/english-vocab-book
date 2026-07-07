@@ -28,6 +28,15 @@ def get_word_by_name(db: Session, word: str) -> Word | None:
     return db.query(Word).filter(Word.word == word).first()
 
 
+def update_word_definitions(db: Session, word_id: int, definitions: str) -> Word | None:
+    word = db.query(Word).filter(Word.id == word_id).first()
+    if not word:
+        return None
+    word.definitions = definitions
+    db.commit()
+    return word
+
+
 def _build_word_entry(entry: dict) -> Word:
     """根据 UAPI entry 构造 Word 对象（不含入库动作）"""
     return Word(

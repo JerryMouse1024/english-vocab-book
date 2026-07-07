@@ -43,6 +43,10 @@ export const deleteSentence = (id) => api.delete(`/sentence/${id}`);
 export const updateSentence = (id, translation) =>
   api.put(`/sentence/${id}`, { translation });
 
+// 更新单词释义
+export const updateWordDefs = (wordId, definitions) =>
+  api.put(`/word/definitions/${wordId}`, { definitions });
+
 // 获取发音音频URL（单词词典发音）
 export const getAudioUrl = (word, accent = 'us') =>
   `/api/word/${encodeURIComponent(word)}/audio/${accent}`;

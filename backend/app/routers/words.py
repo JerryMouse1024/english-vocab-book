@@ -4,12 +4,17 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from app.database import get_db
 from app import crud
 from app import uapi
 from app.schemas import WordCollectRequest, WordListResponse
 
 router = APIRouter(prefix="/api", tags=["words"])
+
+
+class WordUpdateRequest(BaseModel):
+    definitions: str
 
 
 @router.get("/word/{word}")
@@ -102,3 +107,12 @@ async def get_word_audio(word: str, accent: str, db: Session = Depends(get_db)):
                     yield chunk
 
     return StreamingResponse(stream_audio(), media_type="audio/mpeg")
+
+
+@router.put("/word/definitions/{word_id}")
+async def update_word_definitions(word_id: int, req: WordUpdateRequest, db: Session = Depends(get_db)):
+    """更新单词释义"""
+    word = crud.update_word_definitions(db, word_id, req.definitions)
+    if not word:
+        raise HTTPException(status_code=404, detail="单词不存在")
+    return {"id": word.id, "message": "已更新"}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence } from '../api';
+import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence, updateWordDefs } from '../api';
 import { Link } from 'react-router-dom';
 import '../styles/WordBookPage.css';
 
@@ -22,9 +22,9 @@ export default function WordBookPage() {
   const [loading, setLoading] = useState(false);
   // 右侧抽屉状态
   const [drawerItem, setDrawerItem] = useState(null);
-  // 编辑翻译
-  const [editingTrans, setEditingTrans] = useState(false);
-  const [editTransValue, setEditTransValue] = useState('');
+  // 编辑翻译/释义
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
   // 删除确认
   const [confirmItem, setConfirmItem] = useState(null);
 
@@ -95,24 +95,36 @@ export default function WordBookPage() {
   const openDrawer = (e, item) => {
     e.preventDefault();
     setDrawerItem(item);
-    setEditingTrans(false);
-    setEditTransValue('');
+    setEditing(false);
+    setEditValue('');
   };
 
-  /** 保存编辑后的翻译 */
-  const saveTranslation = async () => {
+  /** 保存编辑后的翻译/释义 */
+  const saveEdit = async () => {
     if (!drawerItem) return;
+    const val = editValue.trim();
+    if (!val) return;
     try {
-      await updateSentence(drawerItem.id, editTransValue.trim());
-      setDrawerItem({ ...drawerItem, translation: editTransValue.trim() });
-      setEditingTrans(false);
-      // 同步更新列表中的翻译
+      if (drawerItem.kind === 'word') {
+        // 保存为 JSON 格式，兼容现有展示逻辑
+        const defsJson = JSON.stringify([{ meaning: val }]);
+        await updateWordDefs(drawerItem.word_id, defsJson);
+        setDrawerItem({ ...drawerItem, definitions: val });
+      } else {
+        await updateSentence(drawerItem.id, val);
+        setDrawerItem({ ...drawerItem, translation: val });
+      }
+      setEditing(false);
       setItems((prev) =>
-        prev.map((it) =>
-          it.kind === 'sentence' && it.id === drawerItem.id
-            ? { ...it, translation: editTransValue.trim() }
-            : it
-        )
+        prev.map((it) => {
+          if (it.kind === 'word' && it.id === drawerItem.id) {
+            return { ...it, definitions: val };
+          }
+          if (it.kind === 'sentence' && it.id === drawerItem.id) {
+            return { ...it, translation: val };
+          }
+          return it;
+        })
       );
     } catch {
       alert('保存失败');
@@ -223,7 +235,30 @@ export default function WordBookPage() {
                 )}
                 <div className="drawer-section">
                   <h3>释义</h3>
-                  <p className="drawer-def">{drawerItem.definitions || drawerItem.definitions_summary}</p>
+                  {editing ? (
+                    <div className="drawer-edit-row">
+                      <textarea
+                        className="drawer-edit-input"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            saveEdit();
+                          }
+                          if (e.key === 'Escape') setEditing(false);
+                        }}
+                        autoFocus
+                        rows={3}
+                      />
+                      <div className="drawer-edit-actions">
+                        <button className="drawer-save-btn" onClick={saveEdit}>保存</button>
+                        <button className="drawer-cancel-btn" onClick={() => setEditing(false)}>取消</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="drawer-def">{drawerItem.definitions || drawerItem.definitions_summary}</p>
+                  )}
                 </div>
                 <div className="drawer-meta">
                   <span>{STAGE_LABELS[drawerItem.review_stage] ?? `阶段${drawerItem.review_stage}`}</span>
@@ -232,6 +267,17 @@ export default function WordBookPage() {
                   <span>收藏: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
                 </div>
                 <div className="drawer-footer">
+                  {!editing && (
+                    <button
+                      className="drawer-edit-btn"
+                      onClick={() => {
+                        setEditValue(drawerItem.definitions || drawerItem.definitions_summary || '');
+                        setEditing(true);
+                      }}
+                    >
+                      编辑释义
+                    </button>
+                  )}
                   <button
                     className="drawer-delete-btn"
                     onClick={() => setConfirmItem(drawerItem)}
@@ -246,25 +292,25 @@ export default function WordBookPage() {
                 <h2 className="drawer-title">{drawerItem.original}</h2>
                 <div className="drawer-section">
                   <h3>翻译</h3>
-                  {editingTrans ? (
+                  {editing ? (
                     <div className="drawer-edit-row">
                       <textarea
                         className="drawer-edit-input"
-                        value={editTransValue}
-                        onChange={(e) => setEditTransValue(e.target.value)}
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            saveTranslation();
+                            saveEdit();
                           }
-                          if (e.key === 'Escape') setEditingTrans(false);
+                          if (e.key === 'Escape') setEditing(false);
                         }}
                         autoFocus
                         rows={2}
                       />
                       <div className="drawer-edit-actions">
-                        <button className="drawer-save-btn" onClick={saveTranslation}>保存</button>
-                        <button className="drawer-cancel-btn" onClick={() => setEditingTrans(false)}>取消</button>
+                        <button className="drawer-save-btn" onClick={saveEdit}>保存</button>
+                        <button className="drawer-cancel-btn" onClick={() => setEditing(false)}>取消</button>
                       </div>
                     </div>
                   ) : (
@@ -275,12 +321,12 @@ export default function WordBookPage() {
                   <span>收藏时间: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
                 </div>
                 <div className="drawer-footer">
-                  {!editingTrans && (
+                  {!editing && (
                     <button
                       className="drawer-edit-btn"
                       onClick={() => {
-                        setEditTransValue(drawerItem.translation || '');
-                        setEditingTrans(true);
+                        setEditValue(drawerItem.translation || '');
+                        setEditing(true);
                       }}
                     >
                       编辑翻译
