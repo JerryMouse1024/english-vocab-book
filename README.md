@@ -31,7 +31,7 @@
 start.cmd
 ```
 
-`start.cmd` 会先检查前端是否已构建（`frontend/dist/` 是否存在），没有就自动 `npm install` + `npm run build`，然后启动后端。
+`start.cmd` 会在依赖缺失时自动 `npm install`，并**每次都重新构建前端**（`npm run build`，通常不到 1 秒），确保你拉取的最新代码改动都能生效，然后启动后端。
 
 ### 方式二：手动启动
 
