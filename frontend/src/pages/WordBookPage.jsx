@@ -15,11 +15,13 @@ const STAGE_LABELS = {
 };
 
 export default function WordBookPage() {
-  const [items, setItems] = useState([]); // 合并后的列表（单词 + 句子）
+  const [items, setItems] = useState([]);
   const [wordTotal, setWordTotal] = useState(0);
   const [sentenceTotal, setSentenceTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  // 右侧抽屉状态
+  const [drawerItem, setDrawerItem] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -45,7 +47,6 @@ export default function WordBookPage() {
 
       setWordTotal(wordRes.data.total || 0);
       setSentenceTotal(sentRes.data.items?.length || 0);
-      // 单词在前，句子在后
       setItems([...filteredWords, ...filteredSentences]);
     } catch (err) {
       console.error(err);
@@ -68,22 +69,22 @@ export default function WordBookPage() {
     try {
       if (item.kind === 'word') await deleteCollection(item.id);
       else await deleteSentence(item.id);
+      if (drawerItem && drawerItem.id === item.id) setDrawerItem(null);
       fetchAll();
     } catch (err) {
       alert('删除失败');
     }
   };
 
-  const getStageColor = (stage, mastered) => {
-    if (mastered) return 'mastered';
-    if (stage <= 2) return 'stage-short';
-    if (stage <= 5) return 'stage-mid';
-    return 'stage-long';
-  };
-
   const dueCount = items.filter(
     (w) => w.kind === 'word' && !w.mastered && new Date(w.next_review) <= new Date()
   ).length;
+
+  /** 双击打开抽屉 */
+  const openDrawer = (e, item) => {
+    e.preventDefault();
+    setDrawerItem(item);
+  };
 
   return (
     <div className="wordbook-page">
@@ -111,64 +112,28 @@ export default function WordBookPage() {
 
       {loading && <div className="loading">加载中...</div>}
 
-      <div className="word-list">
-        {items.map((item) =>
-          item.kind === 'word' ? (
-            <div key={`w-${item.id}`} className="word-list-item">
-              <div className="word-list-header">
-                <div className="word-list-main">
-                  <span className="word-text">{item.word}</span>
-                  <span className="word-phonetic">
-                    {item.phonetics_us || item.phonetics_uk || ''}
-                  </span>
-                  <span className={`stage-badge ${getStageColor(item.review_stage, item.mastered)}`}>
-                    {item.mastered ? '已掌握' : STAGE_LABELS[item.review_stage] || `阶段${item.review_stage}`}
-                  </span>
-                </div>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                >
-                  删除
-                </button>
-              </div>
-              <div className="word-list-body">
-                <p className="word-definition">{item.definitions || item.definitions_summary}</p>
-                <p className="word-meta">
-                  下次复习: {new Date(item.next_review).toLocaleDateString('zh-CN')}
-                  {' · '}
-                  复习次数: {item.review_count ?? 0}
-                  {' · '}
-                  收藏时间: {new Date(item.collected_at).toLocaleDateString('zh-CN')}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div key={`s-${item.id}`} className="sentence-list-item">
-              <div className="word-list-header">
-                <div className="sentence-list-main">
-                  <span className="kind-badge sentence">句子</span>
-                  <span className="sentence-text">{item.original}</span>
-                  {item.translation && (
-                    <span className="sentence-translation">{item.translation}</span>
-                  )}
-                </div>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                >
-                  删除
-                </button>
-              </div>
-              <div className="word-list-body">
-                <p className="word-definition">{item.translation || '（无翻译）'}</p>
-                <p className="word-meta">
-                  收藏时间: {new Date(item.collected_at).toLocaleDateString('zh-CN')}
-                </p>
-              </div>
-            </div>
-          )
-        )}
+      {/* ===== 列表区（每行一项，只显示英文）===== */}
+      <div className={`collection-list ${drawerItem ? 'drawer-open' : ''}`}>
+        {items.map((item, idx) => (
+          <div
+            key={`${item.kind}-${item.id}`}
+            className={`collection-row ${drawerItem?.id === item.id ? 'active' : ''}`}
+            onDoubleClick={(e) => openDrawer(e, item)}
+          >
+            <span className="row-index">{String(idx + 1).padStart(2, '0')}</span>
+            <span className="row-text" title={item.kind === 'word' ? item.word : item.original}>
+              {item.kind === 'word' ? item.word : item.original}
+            </span>
+            <span className="row-date">{new Date(item.collected_at).toLocaleDateString('zh-CN')}</span>
+            <button
+              className="delete-btn"
+              onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+              title="删除"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
 
       {!loading && items.length === 0 && (
@@ -176,6 +141,55 @@ export default function WordBookPage() {
           <p>还没有收藏任何单词或句子</p>
           <Link to="/" className="go-search">去查词</Link>
         </div>
+      )}
+
+      {/* ===== 右侧抽屉（双击展开详情）===== */}
+      {drawerItem && (
+        <>
+          <div className="drawer-overlay" onClick={() => setDrawerItem(null)} />
+          <aside className="detail-drawer">
+            <button className="drawer-close" onClick={() => setDrawerItem(null)}>✕</button>
+
+            {drawerItem.kind === 'word' ? (
+              <>
+                {/* 单词详情 */}
+                <h2 className="drawer-title">{drawerItem.word}</h2>
+                {(drawerItem.phonetics_uk || drawerItem.phonetics_us) && (
+                  <div className="drawer-phonetic">
+                    {drawerItem.phonetics_uk && (
+                      <span>英 /{drawerItem.phonetics_uk}/</span>
+                    )}
+                    {drawerItem.phonetics_us && (
+                      <span style={{ marginLeft: 16 }}>美 /{drawerItem.phonetics_us}/</span>
+                    )}
+                  </div>
+                )}
+                <div className="drawer-section">
+                  <h3>释义</h3>
+                  <p className="drawer-def">{drawerItem.definitions || drawerItem.definitions_summary}</p>
+                </div>
+                <div className="drawer-meta">
+                  <span>{STAGE_LABELS[drawerItem.review_stage] ?? `阶段${drawerItem.review_stage}`}</span>
+                  <span>下次: {new Date(drawerItem.next_review).toLocaleDateString('zh-CN')}</span>
+                  <span>复习: {drawerItem.review_count ?? 0} 次</span>
+                  <span>收藏: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 句子详情 */}
+                <h2 className="drawer-title">{drawerItem.original}</h2>
+                <div className="drawer-section">
+                  <h3>翻译</h3>
+                  <p className="drawer-trans">{drawerItem.translation || '（无翻译）'}</p>
+                </div>
+                <div className="drawer-meta">
+                  <span>收藏时间: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
+                </div>
+              </>
+            )}
+          </aside>
+        </>
       )}
     </div>
   );
