@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SearchBar from '../components/SearchBar';
 import WordCard from '../components/WordCard';
-import { lookupWord, querySentence, collectWord, deleteCollection } from '../api';
+import { lookupWord, querySentence, collectWord, deleteCollection, collectSentence } from '../api';
 import '../styles/HomePage.css';
 
 export default function HomePage() {
@@ -11,6 +11,10 @@ export default function HomePage() {
   const [sentenceResult, setSentenceResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // 句子相关状态
+  const [sentenceCollected, setSentenceCollected] = useState(false);
+  const [showWordDetail, setShowWordDetail] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
 
   const handleSearch = async () => {
     if (!input.trim()) return;
@@ -18,6 +22,8 @@ export default function HomePage() {
     setError(null);
     setResults(null);
     setSentenceResult(null);
+    setSentenceCollected(false);
+    setShowWordDetail(false);
 
     try {
       if (mode === 'word') {
@@ -66,6 +72,35 @@ export default function HomePage() {
     }
   };
 
+  // 收藏整句
+  const handleCollectSentence = async () => {
+    if (!sentenceResult) return;
+    try {
+      await collectSentence(
+        sentenceResult.original,
+        null,  // 翻译暂不填，后续可接入翻译 API
+        JSON.stringify(sentenceResult.words)
+      );
+      setSentenceCollected(true);
+    } catch (err) {
+      alert(err.response?.data?.detail || '句子收藏失败');
+    }
+  };
+
+  // 整句朗读（浏览器原生 TTS）
+  const speakSentence = () => {
+    if (!sentenceResult || !window.speechSynthesis) return;
+    // 停止正在播放的
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(sentenceResult.original);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;  // 稍慢一点便于学习
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div className="home-page">
       <div className="hero-section">
@@ -103,18 +138,56 @@ export default function HomePage() {
 
       {sentenceResult && (
         <div className="results-section">
-          <div className="sentence-header">
-            <h2>句子分析</h2>
-            <p className="sentence-original">"{sentenceResult.original}"</p>
-          </div>
-          <div className="sentence-words">
-            {sentenceResult.words.map((w, i) => (
-              <WordCard
-                key={`${w.word}-${i}`}
-                wordData={w}
-                onCollect={handleCollect}
-              />
-            ))}
+          {/* ===== 整句卡片 ===== */}
+          <div className="sentence-card">
+            <div className="sentence-card-header">
+              <p className="sentence-text">{sentenceResult.original}</p>
+              <div className="sentence-actions">
+                {/* 整句朗读 */}
+                <button
+                  className={`speak-btn ${speaking ? 'speaking' : ''}`}
+                  onClick={speakSentence}
+                  disabled={speaking}
+                  title="朗读整句"
+                >
+                  {speaking ? '🔊 播放中' : '🔈 朗读'}
+                </button>
+                {/* 收藏整句 */}
+                <button
+                  className={`sentence-collect-btn ${sentenceCollected ? 'collected' : ''}`}
+                  onClick={handleCollectSentence}
+                  disabled={sentenceCollected}
+                  title={sentenceCollected ? '已收藏句子' : '收藏到句子本'}
+                >
+                  {sentenceCollected ? '★ 已收藏' : '☆ 收藏句子'}
+                </button>
+              </div>
+            </div>
+
+            {/* 可展开的逐词详情 */}
+            {sentenceResult.words.length > 0 && (
+              <div className="sentence-word-detail">
+                <button
+                  className="toggle-detail-btn"
+                  onClick={() => setShowWordDetail(!showWordDetail)}
+                >
+                  {showWordDetail ? '▼ 收起逐词解析' : '▶ 展开逐词解析'}
+                  ({sentenceResult.words.filter(w => !w.error).length}/{sentenceResult.words.length} 词)
+                </button>
+                {showWordDetail && (
+                  <div className="sentence-words-list">
+                    {sentenceResult.words.map((w, i) => (
+                      <WordCard
+                        key={`${w.word}-${i}`}
+                        wordData={{ ...w, is_collected: w.is_collected || false }}
+                        onCollect={handleCollect}
+                        compact
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

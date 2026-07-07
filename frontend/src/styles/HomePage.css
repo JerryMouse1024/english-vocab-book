@@ -78,9 +78,141 @@
   display: inline-block;
 }
 
-.sentence-words {
+/* ===== 整句卡片（句子模式新布局） ===== */
+.sentence-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.sentence-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  flex-wrap: wrap;
+}
+
+.sentence-text {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+  word-break: break-word;
+}
+
+.sentence-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* 朗读按钮 */
+.speak-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 18px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+  border-radius: 22px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.speak-btn:hover:not(:disabled) {
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+}
+
+.speak-btn.speaking {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.speak-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 收藏整句按钮 */
+.sentence-collect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 18px;
+  background: #fff9eb;
+  color: #d97706;
+  border: 1px solid #fcd34d;
+  border-radius: 22px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.sentence-collect-btn:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+
+.sentence-collect-btn.collected {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #6ee7b7;
+  cursor: default;
+}
+
+.sentence-collect-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* 逐词详情区域 */
+.sentence-word-detail {
+  border-top: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.toggle-detail-btn {
+  width: 100%;
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.toggle-detail-btn:hover {
+  color: var(--primary);
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.sentence-words-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  padding: 0 20px 20px;
 }
 
 .empty-hint {
