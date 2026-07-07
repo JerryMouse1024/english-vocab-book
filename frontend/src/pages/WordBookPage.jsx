@@ -23,17 +23,18 @@ export default function WordBookPage() {
   // 右侧抽屉状态
   const [drawerItem, setDrawerItem] = useState(null);
 
-  const fetchAll = async () => {
+  const fetchAll = async (overrideSearch) => {
     setLoading(true);
     try {
+      const q = overrideSearch !== undefined ? overrideSearch : search;
       const [wordRes, sentRes] = await Promise.all([
-        getWordList({ q: search || undefined, page: 1, size: 1000 }),
+        getWordList({ q: q || undefined, page: 1, size: 1000 }),
         getSentences(),
       ]);
       const words = (wordRes.data.items || []).map((w) => ({ ...w, kind: 'word' }));
       const sentences = (sentRes.data.items || []).map((s) => ({ ...s, kind: 'sentence' }));
 
-      const kw = search.trim().toLowerCase();
+      const kw = q.trim().toLowerCase();
       const filteredWords = kw
         ? words.filter((w) => w.word.toLowerCase().includes(kw))
         : words;
@@ -107,7 +108,7 @@ export default function WordBookPage() {
           {search && (
             <button
               className="search-clear-btn"
-              onClick={() => { setSearch(''); fetchAll(); }}
+              onClick={() => { setSearch(''); fetchAll(''); }}
               title="清空搜索"
               type="button"
             >
