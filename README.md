@@ -19,6 +19,35 @@
 | 数据库 | SQLite |
 | 词典API | UAPI (免费) |
 
+## 环境要求
+
+> 本项目需要本机先装好 **Python** 和 **Node.js** 两个运行环境，下面"安装依赖"是在这二者已具备的前提下的步骤。全新电脑请先完成本节。
+
+### 1. 安装 Python（后端运行环境）
+
+1. 前往 https://www.python.org/downloads/ 下载 Windows 安装包；
+2. 运行安装程序时**务必勾选 "Add Python to PATH"**（否则 CMD 里敲 `python` 会提示"不是内部或外部命令"）；
+3. 安装完成后**重新打开一个 CMD**，验证：
+
+```cmd
+python --version
+```
+
+能看到 `Python 3.11.x` 之类版本号即安装成功。（若 `python` 提示找不到，可试 `py --version`，这是 Python 启动器。）
+
+### 2. 安装 Node.js（前端构建环境）
+
+1. 前往 https://nodejs.org/ 下载 **LTS 版本** 安装包；
+2. 默认安装即可，安装程序会自动把 `node` / `npm` 加入 PATH；
+3. 安装完成后**重新打开一个 CMD**，验证：
+
+```cmd
+node --version
+npm --version
+```
+
+能看到版本号即安装成功。（`npm` 随 Node.js 一同安装，前端构建依赖它。）
+
 ## 快速启动
 
 > 本项目前后端整合在**同一端口 8000**：后端会自动托管前端页面，**无需单独启动前端**。
@@ -37,7 +66,7 @@ start.cmd
 
 ### 方式二：手动启动
 
-**第一步：安装 Python 依赖（只需执行一次）**
+**第一步：安装 Python 依赖（只需执行一次，前提是已完成上方「环境要求」中的 Python 安装）**
 
 ```bash
 cd backend
