@@ -13,4 +13,4 @@ call npm run build
 
 :: 启动后端（后端会同时托管前端页面）
 cd /d %~dp0backend
-python run.py
+python run.py || pause
