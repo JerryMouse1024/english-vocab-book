@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getWordList, deleteCollection, getSentences, deleteSentence } from '../api';
+import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence } from '../api';
 import { Link } from 'react-router-dom';
 import '../styles/WordBookPage.css';
 
@@ -22,6 +22,9 @@ export default function WordBookPage() {
   const [loading, setLoading] = useState(false);
   // 右侧抽屉状态
   const [drawerItem, setDrawerItem] = useState(null);
+  // 编辑翻译
+  const [editingTrans, setEditingTrans] = useState(false);
+  const [editTransValue, setEditTransValue] = useState('');
 
   const fetchAll = async (overrideSearch) => {
     setLoading(true);
@@ -88,6 +91,28 @@ export default function WordBookPage() {
   const openDrawer = (e, item) => {
     e.preventDefault();
     setDrawerItem(item);
+    setEditingTrans(false);
+    setEditTransValue('');
+  };
+
+  /** 保存编辑后的翻译 */
+  const saveTranslation = async () => {
+    if (!drawerItem) return;
+    try {
+      await updateSentence(drawerItem.id, editTransValue.trim());
+      setDrawerItem({ ...drawerItem, translation: editTransValue.trim() });
+      setEditingTrans(false);
+      // 同步更新列表中的翻译
+      setItems((prev) =>
+        prev.map((it) =>
+          it.kind === 'sentence' && it.id === drawerItem.id
+            ? { ...it, translation: editTransValue.trim() }
+            : it
+        )
+      );
+    } catch {
+      alert('保存失败');
+    }
   };
 
   /** 熟练度标签文字 */
@@ -216,8 +241,44 @@ export default function WordBookPage() {
                 {/* 句子详情 */}
                 <h2 className="drawer-title">{drawerItem.original}</h2>
                 <div className="drawer-section">
-                  <h3>翻译</h3>
-                  <p className="drawer-trans">{drawerItem.translation || '（无翻译）'}</p>
+                  <div className="drawer-section-header">
+                    <h3>翻译</h3>
+                    {!editingTrans && (
+                      <button
+                        className="drawer-edit-btn"
+                        onClick={() => {
+                          setEditTransValue(drawerItem.translation || '');
+                          setEditingTrans(true);
+                        }}
+                      >
+                        编辑
+                      </button>
+                    )}
+                  </div>
+                  {editingTrans ? (
+                    <div className="drawer-edit-row">
+                      <textarea
+                        className="drawer-edit-input"
+                        value={editTransValue}
+                        onChange={(e) => setEditTransValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            saveTranslation();
+                          }
+                          if (e.key === 'Escape') setEditingTrans(false);
+                        }}
+                        autoFocus
+                        rows={2}
+                      />
+                      <div className="drawer-edit-actions">
+                        <button className="drawer-save-btn" onClick={saveTranslation}>保存</button>
+                        <button className="drawer-cancel-btn" onClick={() => setEditingTrans(false)}>取消</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="drawer-trans">{drawerItem.translation || '（无翻译）'}</p>
+                  )}
                 </div>
                 <div className="drawer-meta">
                   <span>收藏时间: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>

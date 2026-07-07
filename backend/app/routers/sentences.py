@@ -4,6 +4,7 @@ import re
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from app.database import get_db
 from app import crud
 from app import uapi
@@ -11,6 +12,10 @@ from app import translate as translate_mod
 from app.schemas import SentenceQueryRequest, SentenceCollectRequest
 
 router = APIRouter(prefix="/api", tags=["sentences"])
+
+
+class SentenceUpdateRequest(BaseModel):
+    translation: str | None = None
 
 
 @router.post("/sentence/query")
@@ -99,3 +104,15 @@ async def remove_sentence(sentence_id: int, db: Session = Depends(get_db)):
     if crud.delete_sentence(db, sentence_id):
         return {"message": "句子已删除"}
     raise HTTPException(status_code=404, detail="句子记录不存在")
+
+
+@router.put("/sentence/{sentence_id}")
+async def update_sentence(sentence_id: int, req: SentenceUpdateRequest, db: Session = Depends(get_db)):
+    """更新句子翻译"""
+    sc = crud.get_sentence_collection_by_id(db, sentence_id)
+    if not sc:
+        raise HTTPException(status_code=404, detail="句子记录不存在")
+    if req.translation is not None:
+        sc.translation = req.translation
+        db.commit()
+    return {"id": sc.id, "translation": sc.translation, "message": "已更新"}

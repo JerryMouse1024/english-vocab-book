@@ -249,6 +249,95 @@
   word-break: break-word;
 }
 
+/* 翻译编辑 */
+.drawer-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.drawer-section-header h3 {
+  margin-bottom: 0;
+}
+
+.drawer-edit-btn {
+  font-size: 12px;
+  padding: 2px 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 4px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.drawer-edit-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.drawer-edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-edit-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.drawer-edit-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.drawer-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.drawer-save-btn,
+.drawer-cancel-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.drawer-save-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+.drawer-save-btn:hover {
+  background: var(--primary-dark);
+}
+
+.drawer-cancel-btn {
+  background: #fff;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.drawer-cancel-btn:hover {
+  background: #f1f5f9;
+}
+
 .drawer-meta {
   display: flex;
   flex-wrap: wrap;

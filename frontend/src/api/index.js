@@ -39,6 +39,10 @@ export const getSentences = () => api.get('/sentences');
 // 删除收藏本中的句子
 export const deleteSentence = (id) => api.delete(`/sentence/${id}`);
 
+// 更新句子翻译
+export const updateSentence = (id, translation) =>
+  api.put(`/sentence/${id}`, { translation });
+
 // 获取发音音频URL（单词词典发音）
 export const getAudioUrl = (word, accent = 'us') =>
   `/api/word/${encodeURIComponent(word)}/audio/${accent}`;
