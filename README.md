@@ -44,12 +44,13 @@ cd backend
 pip install -r requirements.txt
 ```
 
-如果 `pip` 不在 PATH，或 Linux 提示环境受限（externally-managed），可用下面这条等价命令（也是本项目实际使用的写法）：
+如果 `pip` 不在 PATH，或 Linux 提示环境受限（externally-managed），可用下面这条等价命令：
 
 ```bash
-python3.11 -m pip install --break-system-packages fastapi uvicorn sqlalchemy httpx pydantic
+python -m pip install --break-system-packages fastapi uvicorn sqlalchemy httpx pydantic
 ```
 
+> - Windows 上 Python 命令通常是 `python`（不是 `python3.11`，那是 Linux/macOS 写法）；若 `python` 找不到，试 `py -m pip ...`（Python 启动器）。
 > - `--break-system-packages` 主要用于 Linux 受限环境；Windows 通常不加也能装，但加上无害。
 > - 启动项目本身**不需要**重复安装依赖，只有首次或依赖缺失时才装。
 
