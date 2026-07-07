@@ -141,6 +141,11 @@ def get_word_list(db: Session, q: str | None = None, page: int = 1, size: int = 
     for coll, word in rows:
         defs = json.loads(word.definitions) if word.definitions else []
         summary = defs[0].get("meaning", "") if defs else ""
+        # 拼接所有词性+释义，用于收藏本展示
+        full_definitions = "; ".join(
+            f"{d.get('part_of_speech', '')} {d.get('meaning', '')}".strip()
+            for d in defs if d.get("meaning")
+        )
         items.append({
             "id": coll.id,
             "word_id": word.id,
@@ -148,7 +153,9 @@ def get_word_list(db: Session, q: str | None = None, page: int = 1, size: int = 
             "phonetics_uk": word.phonetics_uk,
             "phonetics_us": word.phonetics_us,
             "definitions_summary": summary,
+            "definitions": full_definitions,
             "review_stage": coll.review_stage,
+            "review_count": coll.review_count,
             "next_review": coll.next_review,
             "mastered": bool(coll.mastered),
             "collected_at": coll.collected_at,

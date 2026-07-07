@@ -53,12 +53,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-
-.word-list-header:hover {
-  background: #f8fafc;
 }
 
 .word-list-main {
@@ -106,6 +100,26 @@
   color: var(--info);
 }
 
+/* 单词条目主体：释义 + 元信息 */
+.word-list-body {
+  padding: 0 16px 12px;
+}
+
+.word-definition {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  margin: 0 0 6px;
+  word-break: break-word;
+}
+
+.word-meta {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  margin: 0;
+}
+
+/* 句子条目操作区（保留） */
 .word-list-actions {
   display: flex;
   align-items: center;
@@ -119,18 +133,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.word-list-detail {
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-top: 1px solid var(--border);
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.word-list-detail p {
-  margin-bottom: 4px;
 }
 
 .go-search {

@@ -116,10 +116,7 @@ export default function WordBookPage() {
         {items.map((item) =>
           item.kind === 'word' ? (
             <div key={`w-${item.id}`} className="word-list-item">
-              <div
-                className="word-list-header"
-                onClick={() => setExpandedId(expandedId === `w-${item.id}` ? null : `w-${item.id}`)}
-              >
+              <div className="word-list-header">
                 <div className="word-list-main">
                   <span className="word-text">{item.word}</span>
                   <span className="word-phonetic">
@@ -129,23 +126,23 @@ export default function WordBookPage() {
                     {item.mastered ? '已掌握' : STAGE_LABELS[item.review_stage] || `阶段${item.review_stage}`}
                   </span>
                 </div>
-                <div className="word-list-actions">
-                  <span className="word-summary">{item.definitions_summary}</span>
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                  >
-                    删除
-                  </button>
-                </div>
+                <button
+                  className="delete-btn"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                >
+                  删除
+                </button>
               </div>
-              {expandedId === `w-${item.id}` && (
-                <div className="word-list-detail">
-                  <p>下次复习: {new Date(item.next_review).toLocaleDateString('zh-CN')}</p>
-                  <p>复习次数: {item.review_count}</p>
-                  <p>收藏时间: {new Date(item.collected_at).toLocaleString('zh-CN')}</p>
-                </div>
-              )}
+              <div className="word-list-body">
+                <p className="word-definition">{item.definitions || item.definitions_summary}</p>
+                <p className="word-meta">
+                  下次复习: {new Date(item.next_review).toLocaleDateString('zh-CN')}
+                  {' · '}
+                  复习次数: {item.review_count ?? 0}
+                  {' · '}
+                  收藏时间: {new Date(item.collected_at).toLocaleDateString('zh-CN')}
+                </p>
+              </div>
             </div>
           ) : (
             <div key={`s-${item.id}`} className="sentence-list-item">
