@@ -90,6 +90,35 @@
   font-size: 18px;
 }
 
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.retry-btn {
+  padding: 6px 18px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background var(--transition);
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
   .hero-section h1 {
     font-size: 28px;

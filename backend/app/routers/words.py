@@ -6,30 +6,15 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import crud
+from app import uapi
 from app.schemas import WordCollectRequest, WordListResponse
 
 router = APIRouter(prefix="/api", tags=["words"])
 
-UAPI_BASE = "https://uapis.cn/api/v1/dictionary"
-
-
-async def fetch_from_uapi(word: str) -> dict:
-    """从 UAPI 获取单词释义"""
-    async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.get(f"{UAPI_BASE}/lookup", params={"word": word})
-        if resp.status_code == 404:
-            raise HTTPException(status_code=404, detail="未找到该单词的释义")
-        if resp.status_code != 200:
-            raise HTTPException(status_code=502, detail="查词服务暂时不可用，请稍后重试")
-        data = resp.json()
-        if not data.get("found"):
-            raise HTTPException(status_code=404, detail="未找到该单词的释义")
-        return data
-
 
 @router.get("/word/{word}")
 async def lookup_word(word: str, db: Session = Depends(get_db)):
-    """查询单词释义（优先本地缓存，否则代理UAPI）"""
+    """查询单词释义（优先本地缓存，否则代理UAPI，失败回退备选数据源）"""
     word_lower = word.strip().lower()
     if not word_lower:
         raise HTTPException(status_code=400, detail="请输入单词")
@@ -40,8 +25,11 @@ async def lookup_word(word: str, db: Session = Depends(get_db)):
         is_col = crud.is_collected(db, cached.id)
         return crud.word_to_response(cached, is_collected=is_col)
 
-    # 调用UAPI
-    data = await fetch_from_uapi(word_lower)
+    # 调用 UAPI（含重试与备选数据源回退）
+    data = await uapi.lookup_word(word_lower)
+    if data is None:
+        raise HTTPException(status_code=404, detail="未找到该单词的释义")
+
     # 缓存到本地
     cached = crud.create_word(db, data)
     return crud.word_to_response(cached, is_collected=False)
@@ -58,7 +46,9 @@ async def collect_word(req: WordCollectRequest, db: Session = Depends(get_db)):
     word_record = crud.get_word_by_name(db, word_lower)
     if not word_record:
         # 先查词再缓存
-        data = await fetch_from_uapi(word_lower)
+        data = await uapi.lookup_word(word_lower)
+        if data is None:
+            raise HTTPException(status_code=404, detail="未找到该单词的释义")
         word_record = crud.create_word(db, data)
 
     collection = crud.create_collection(db, word_record.id, req.note)
@@ -86,7 +76,7 @@ async def list_words(
 
 @router.get("/word/{word}/audio/{accent}")
 async def get_word_audio(word: str, accent: str, db: Session = Depends(get_db)):
-    """获取单词发音音频（代理UAPI音频）"""
+    """获取单词发音音频（优先本地缓存，否则代理UAPI，失败回退备选数据源）"""
     word_lower = word.strip().lower()
     if accent not in ("uk", "us"):
         raise HTTPException(status_code=400, detail="accent 参数必须为 uk 或 us")
@@ -98,15 +88,7 @@ async def get_word_audio(word: str, accent: str, db: Session = Depends(get_db)):
         audio_url = cached.audio_uk_url if accent == "uk" else cached.audio_us_url
 
     if not audio_url:
-        # 查UAPI获取音频
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(f"{UAPI_BASE}/lookup", params={"word": word_lower})
-            if resp.status_code == 200:
-                data = resp.json()
-                entry = data.get("entry", data)
-                phonetics = entry.get("phonetics", {}) or {}
-                acc_data = phonetics.get(accent, {}) or {}
-                audio_url = acc_data.get("audio")
+        audio_url = await uapi.fetch_audio_url(word_lower, accent)
 
     if not audio_url:
         raise HTTPException(status_code=404, detail="该单词暂无发音")

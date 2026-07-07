@@ -25,10 +25,22 @@ export default function HomePage() {
         setResults(res.data);
       } else {
         const res = await querySentence(input.trim());
+        // 句子模式下，若有单词查询失败，给出整体提示
+        const failed = res.data.words.filter((w) => w.error).length;
         setSentenceResult(res.data);
+        if (failed > 0) {
+          setError(`句子中的 ${failed} 个单词查询失败（可能是网络波动或额度限制），已正常显示其余单词`);
+        }
       }
     } catch (err) {
-      setError(err.response?.data?.detail || '查询失败，请稍后重试');
+      const status = err.response?.status;
+      if (status === 429) {
+        setError(err.response?.data?.detail || '今日免费查询额度已用完，请稍后重试');
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        setError('网络连接异常，请检查网络后点击重试');
+      } else {
+        setError(err.response?.data?.detail || '查询失败，请稍后重试');
+      }
     } finally {
       setLoading(false);
     }
@@ -71,7 +83,14 @@ export default function HomePage() {
 
       {loading && <div className="loading">查询中...</div>}
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="error-message">
+          <span>{error}</span>
+          <button className="retry-btn" onClick={handleSearch} disabled={loading}>
+            {loading ? '重试中...' : '重试'}
+          </button>
+        </div>
+      )}
 
       {results && (
         <div className="results-section">

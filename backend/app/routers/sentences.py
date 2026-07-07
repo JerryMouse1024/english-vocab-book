@@ -1,16 +1,14 @@
 """句子查词与收藏路由"""
 import json
 import re
-import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import crud
+from app import uapi
 from app.schemas import SentenceQueryRequest, SentenceCollectRequest
 
 router = APIRouter(prefix="/api", tags=["sentences"])
-
-UAPI_BASE = "https://uapis.cn/api/v1/dictionary"
 
 
 @router.post("/sentence/query")
@@ -41,28 +39,33 @@ async def query_sentence(req: SentenceQueryRequest, db: Session = Depends(get_db
                 "audio_uk_url": cached.audio_uk_url,
                 "audio_us_url": cached.audio_us_url,
             })
-        else:
-            try:
-                async with httpx.AsyncClient(timeout=15.0) as client:
-                    resp = await client.get(f"{UAPI_BASE}/lookup", params={"word": w})
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        if data.get("found"):
-                            cached = crud.create_word(db, data)
-                            word_results.append({
-                                "word": cached.word,
-                                "definitions": json.loads(cached.definitions) if cached.definitions else [],
-                                "phonetics_uk": cached.phonetics_uk,
-                                "phonetics_us": cached.phonetics_us,
-                                "audio_uk_url": cached.audio_uk_url,
-                                "audio_us_url": cached.audio_us_url,
-                            })
-                        else:
-                            word_results.append({"word": w, "definitions": [], "phonetics_uk": None, "phonetics_us": None, "audio_uk_url": None, "audio_us_url": None})
-                    else:
-                        word_results.append({"word": w, "definitions": [], "phonetics_uk": None, "phonetics_us": None, "audio_uk_url": None, "audio_us_url": None})
-            except Exception:
-                word_results.append({"word": w, "definitions": [], "phonetics_uk": None, "phonetics_us": None, "audio_uk_url": None, "audio_us_url": None})
+            continue
+
+        try:
+            data = await uapi.lookup_word(w)
+            if data is None:
+                word_results.append({
+                    "word": w, "definitions": None, "error": True,
+                    "phonetics_uk": None, "phonetics_us": None,
+                    "audio_uk_url": None, "audio_us_url": None,
+                })
+                continue
+            cached = crud.create_word(db, data)
+            word_results.append({
+                "word": cached.word,
+                "definitions": json.loads(cached.definitions) if cached.definitions else [],
+                "phonetics_uk": cached.phonetics_uk,
+                "phonetics_us": cached.phonetics_us,
+                "audio_uk_url": cached.audio_uk_url,
+                "audio_us_url": cached.audio_us_url,
+            })
+        except HTTPException:
+            # 单个词查询失败不影响整句，标记 error 让前端提示
+            word_results.append({
+                "word": w, "definitions": None, "error": True,
+                "phonetics_uk": None, "phonetics_us": None,
+                "audio_uk_url": None, "audio_us_url": None,
+            })
 
     return {"original": sentence, "words": word_results}
 
