@@ -21,29 +21,44 @@
 
 ## 快速启动
 
-### 1. 启动后端
+> 本项目前后端整合在**同一端口 8000**：后端会自动托管前端页面，无需单独启动前端。
+
+### 方式一：一键启动（Windows 推荐）
+
+项目根目录已提供 `start.cmd`，双击即可启动（已内置 UTF-8 编码设置，避免中文乱码）：
+
+```cmd
+start.cmd
+```
+
+### 方式二：手动启动
+
+**第一步：安装依赖（只需执行一次）**
 
 ```bash
 cd backend
-python3.11 -m pip install --break-system-packages fastapi uvicorn sqlalchemy httpx pydantic
-python3.11 run.py
+pip install -r requirements.txt
 ```
 
-后端运行在 http://localhost:8000
+> - Linux 若提示环境受限，可加 `--break-system-packages`；Windows 不需要该参数。
+> - 启动项目本身**不需要**重复安装依赖，只有首次或依赖缺失时才装。
 
-### 2. 启动前端
+**第二步：启动**
 
 ```bash
-cd frontend
-npm install
-npm run dev
+cd backend
+python run.py
 ```
 
-前端运行在 http://localhost:5173
+后端运行在 http://localhost:8000 ，浏览器直接访问该地址即可使用。
 
-### 3. 打开浏览器
+### Windows 终端中文乱码解决办法
 
-访问 http://localhost:5173 即可使用。
+旧版 CMD 默认用 GBK 显示，而 Python 输出 UTF-8，会出现乱码（仅影响终端显示，不影响网页内容）。三种办法：
+
+1. 用项目自带的 `start.cmd`（已处理编码）；
+2. 启动前执行 `chcp 65001` 并 `set PYTHONUTF8=1`；
+3. 改用 **Windows Terminal** 或 **PowerShell**，原生支持 UTF-8。
 
 ## API 文档
 
