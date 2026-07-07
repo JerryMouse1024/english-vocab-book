@@ -1,0 +1,177 @@
+.word-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition);
+}
+
+.word-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.word-card.compact {
+  padding: 16px;
+}
+
+.word-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.word-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  text-transform: lowercase;
+}
+
+.exam-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.exam-tag {
+  background: #eef2ff;
+  color: var(--primary);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.word-section {
+  margin-bottom: 16px;
+}
+
+.word-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+.definition-item {
+  margin-bottom: 4px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pos {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 13px;
+  margin-right: 4px;
+}
+
+.eng-def-item {
+  margin-bottom: 8px;
+}
+
+.eng-example {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-left: 12px;
+  font-style: italic;
+}
+
+.word-forms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.word-form-item {
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.phrase-item {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.synonym-item {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.example-item {
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+
+.example-source {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.example-translation {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* 发音按钮 */
+.phonetic-player {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.phonetic-btn {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.phonetic-btn:hover {
+  background: #e2e8f0;
+}
+
+.phonetic-btn.playing {
+  background: var(--primary-light);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* 收藏按钮 */
+.collect-btn {
+  padding: 6px 16px;
+  background: transparent;
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+
+.collect-btn:hover {
+  background: var(--warning);
+  color: white;
+}
+
+.collect-btn.collected {
+  background: var(--warning);
+  color: white;
+}

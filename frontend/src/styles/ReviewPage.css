@@ -1,0 +1,207 @@
+.review-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* 进度条 */
+.review-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--success);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* 复习卡片 */
+.review-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-word-display {
+  margin-bottom: 24px;
+}
+
+.review-word {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+.stage-info {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.show-meaning-btn {
+  padding: 12px 32px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.show-meaning-btn:hover {
+  background: var(--primary-dark);
+}
+
+.review-meaning {
+  width: 100%;
+  text-align: left;
+}
+
+.review-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+  justify-content: center;
+}
+
+.action-btn {
+  flex: 1;
+  max-width: 200px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.fail-btn {
+  background: #fef2f2;
+  color: var(--danger);
+  border: 2px solid #fecaca;
+}
+
+.fail-btn:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.pass-btn {
+  background: #ecfdf5;
+  color: var(--success);
+  border: 2px solid #a7f3d0;
+}
+
+.pass-btn:hover {
+  background: var(--success);
+  color: white;
+}
+
+.review-queue {
+  text-align: center;
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 完成状态 */
+.review-finished {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.finished-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.review-finished h2 {
+  font-size: 28px;
+  color: var(--success);
+  margin-bottom: 8px;
+}
+
+.finished-tip {
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* 空状态 */
+.review-empty {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.review-empty h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.review-empty p {
+  color: var(--text-secondary);
+}
+
+.retry-btn {
+  display: block;
+  margin: 16px auto;
+  padding: 10px 24px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .review-word {
+    font-size: 32px;
+  }
+
+  .review-card {
+    padding: 24px 16px;
+  }
+
+  .action-btn {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+}

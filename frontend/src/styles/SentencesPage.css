@@ -1,0 +1,63 @@
+.sentences-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.sentence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sentence-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.sentence-header {
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.sentence-original {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.sentence-translation {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.sentence-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.sentence-words {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+}
+
+.sentence-word-item {
+  padding: 6px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sentence-word-item:last-child {
+  border-bottom: none;
+}
+
+.sentence-word-item strong {
+  color: var(--primary-dark);
+  margin-right: 4px;
+}

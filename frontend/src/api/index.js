@@ -1,0 +1,46 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: '/api',
+  timeout: 15000,
+});
+
+// 查词
+export const lookupWord = (word) => api.get(`/word/${encodeURIComponent(word)}`);
+
+// 收藏单词
+export const collectWord = (word, note = null) =>
+  api.post('/word/collect', { word, note });
+
+// 删除收藏
+export const deleteCollection = (id) => api.delete(`/word/collect/${id}`);
+
+// 获取单词本列表
+export const getWordList = (params = {}) => api.get('/words', { params });
+
+// 获取今日复习任务
+export const getTodayReview = () => api.get('/review/today');
+
+// 完成复习
+export const completeReview = (id, result) =>
+  api.post(`/review/complete/${id}`, { result });
+
+// 句子查词
+export const querySentence = (sentence) =>
+  api.post('/sentence/query', { sentence });
+
+// 收藏��子
+export const collectSentence = (original, translation = null, wordsJson = null) =>
+  api.post('/sentence/collect', { original, translation, words_json: wordsJson });
+
+// 获取句子收藏列表
+export const getSentences = () => api.get('/sentences');
+
+// 删除句子收藏
+export const deleteSentence = (id) => api.delete(`/sentence/${id}`);
+
+// 获取发音音频URL
+export const getAudioUrl = (word, accent = 'us') =>
+  `/api/word/${encodeURIComponent(word)}/audio/${accent}`;
+
+export default api;

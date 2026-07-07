@@ -1,0 +1,151 @@
+.wordbook-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.wordbook-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.wordbook-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 8px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.review-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.review-link:hover {
+  text-decoration: underline;
+}
+
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.word-list-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.word-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.word-list-header:hover {
+  background: #f8fafc;
+}
+
+.word-list-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.word-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.word-phonetic {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.stage-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stage-badge.stage-short {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.stage-badge.stage-mid {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.stage-badge.stage-long {
+  background: #ecfdf5;
+  color: var(--success);
+}
+
+.stage-badge.mastered {
+  background: #eff6ff;
+  color: var(--info);
+}
+
+.word-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.word-summary {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.word-list-detail {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.word-list-detail p {
+  margin-bottom: 4px;
+}
+
+.go-search {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 20px;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .word-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .word-summary {
+    max-width: 200px;
+  }
+}
