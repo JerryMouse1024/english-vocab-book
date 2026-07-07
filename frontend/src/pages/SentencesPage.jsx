@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getSentences, deleteSentence } from '../api';
+import { speakText, isTTSAvailable } from '../utils/tts';
 import '../styles/SentencesPage.css';
 
 export default function SentencesPage() {
@@ -53,6 +54,20 @@ export default function SentencesPage() {
               <span className="sentence-date">
                 {new Date(s.collected_at).toLocaleDateString('zh-CN')}
               </span>
+              <button
+                className="sentence-speak-btn"
+                title="朗读该句"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isTTSAvailable()) {
+                    alert('当前浏览器不支持语音朗读，请换用 Chrome / Edge 等现代浏览器');
+                    return;
+                  }
+                  speakText(s.original, { lang: 'en-US', rate: 0.9 });
+                }}
+              >
+                🔈
+              </button>
             </div>
             {expandedId === s.id && s.words_json && (
               <div className="sentence-words">

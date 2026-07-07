@@ -88,6 +88,7 @@ class WordInSentence(BaseModel):
 
 class SentenceQueryResponse(BaseModel):
     original: str
+    translation: Optional[str] = None
     words: List[WordInSentence]
 
 

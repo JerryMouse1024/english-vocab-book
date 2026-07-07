@@ -2,10 +2,18 @@ import { useState } from 'react';
 import SearchBar from '../components/SearchBar';
 import WordCard from '../components/WordCard';
 import { lookupWord, querySentence, collectWord, deleteCollection, collectSentence } from '../api';
+import { speakText, stopSpeaking, isTTSAvailable } from '../utils/tts';
 import '../styles/HomePage.css';
 
+// 判断输入是「单个单词」还是「短语/句子」
+function isSingleWord(input) {
+  const trimmed = input.trim();
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  // 只有一个 token，且由字母、撇号、连字符组成（如 don't / well-known）
+  return tokens.length === 1 && /^[a-zA-Z][a-zA-Z'’-]*$/.test(tokens[0]);
+}
+
 export default function HomePage() {
-  const [mode, setMode] = useState('word');
   const [input, setInput] = useState('');
   const [results, setResults] = useState(null);
   const [sentenceResult, setSentenceResult] = useState(null);
@@ -17,25 +25,29 @@ export default function HomePage() {
   const [speaking, setSpeaking] = useState(false);
 
   const handleSearch = async () => {
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
     setLoading(true);
     setError(null);
     setResults(null);
     setSentenceResult(null);
     setSentenceCollected(false);
     setShowWordDetail(false);
+    stopSpeaking();
+    setSpeaking(false);
 
     try {
-      if (mode === 'word') {
-        const res = await lookupWord(input.trim());
+      if (isSingleWord(trimmed)) {
+        // 单个单词 -> 词典卡片
+        const res = await lookupWord(trimmed);
         setResults(res.data);
       } else {
-        const res = await querySentence(input.trim());
-        // 句子模式下，若有单词查询失败，给出整体提示
+        // 短语 / 句子 -> 整句卡片（含翻译 + 朗读 + 逐词详情）
+        const res = await querySentence(trimmed);
         const failed = res.data.words.filter((w) => w.error).length;
         setSentenceResult(res.data);
         if (failed > 0) {
-          setError(`句子中的 ${failed} 个单词查询失败（可能是网络波动或额度限制），已正常显示其余单词`);
+          setError(`句子中的 ${failed} 个单词查询失败（可能是网络波动或额度限制），已正常显示其余内容`);
         }
       }
     } catch (err) {
@@ -55,7 +67,6 @@ export default function HomePage() {
   const handleCollect = async (word) => {
     try {
       await collectWord(word);
-      // 刷新收藏状态
       if (results && results.word === word) {
         setResults({ ...results, is_collected: true });
       }
@@ -72,13 +83,13 @@ export default function HomePage() {
     }
   };
 
-  // 收藏整句
+  // 收藏整句（含翻译）
   const handleCollectSentence = async () => {
     if (!sentenceResult) return;
     try {
       await collectSentence(
         sentenceResult.original,
-        null,  // 翻译暂不填，后续可接入翻译 API
+        sentenceResult.translation || null,
         JSON.stringify(sentenceResult.words)
       );
       setSentenceCollected(true);
@@ -89,30 +100,30 @@ export default function HomePage() {
 
   // 整句朗读（浏览器原生 TTS）
   const speakSentence = () => {
-    if (!sentenceResult || !window.speechSynthesis) return;
-    // 停止正在播放的
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(sentenceResult.original);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;  // 稍慢一点便于学习
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
+    if (!sentenceResult) return;
+    if (!isTTSAvailable()) {
+      alert('当前浏览器不支持语音朗读，请换用 Chrome / Edge 等现代浏览器');
+      return;
+    }
+    speakText(sentenceResult.original, {
+      lang: 'en-US',
+      rate: 0.9,
+      onStart: () => setSpeaking(true),
+      onEnd: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
   };
 
   return (
     <div className="home-page">
       <div className="hero-section">
         <h1>英语单词本</h1>
-        <p className="hero-subtitle">查询单词释义，收藏到单词本，科学复习记忆</p>
+        <p className="hero-subtitle">输入单词、短语或句子，查询释义、整句翻译与发音，科学复习记忆</p>
         <SearchBar
           value={input}
           onChange={setInput}
           onSearch={handleSearch}
-          mode={mode}
-          onModeChange={setMode}
-          placeholder={mode === 'word' ? '输入英文单词，如: present' : '输入英语句子，如: I have a dream'}
+          placeholder="输入英文单词、短语或句子，如: present / what is it?"
         />
       </div>
 
@@ -127,6 +138,7 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* 单个单词：词典卡片（自带英/美发音） */}
       {results && (
         <div className="results-section">
           <WordCard
@@ -136,12 +148,17 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* 短语 / 句子：整句卡片 */}
       {sentenceResult && (
         <div className="results-section">
-          {/* ===== 整句卡片 ===== */}
           <div className="sentence-card">
             <div className="sentence-card-header">
-              <p className="sentence-text">{sentenceResult.original}</p>
+              <div className="sentence-text-block">
+                <p className="sentence-text">{sentenceResult.original}</p>
+                {sentenceResult.translation && (
+                  <p className="sentence-translation">{sentenceResult.translation}</p>
+                )}
+              </div>
               <div className="sentence-actions">
                 {/* 整句朗读 */}
                 <button
@@ -172,7 +189,7 @@ export default function HomePage() {
                   onClick={() => setShowWordDetail(!showWordDetail)}
                 >
                   {showWordDetail ? '▼ 收起逐词解析' : '▶ 展开逐词解析'}
-                  ({sentenceResult.words.filter(w => !w.error).length}/{sentenceResult.words.length} 词)
+                  ({sentenceResult.words.filter((w) => !w.error).length}/{sentenceResult.words.length} 词)
                 </button>
                 {showWordDetail && (
                   <div className="sentence-words-list">

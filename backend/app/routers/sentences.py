@@ -1,11 +1,13 @@
 """句子查词与收藏路由"""
 import json
 import re
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import crud
 from app import uapi
+from app import translate as translate_mod
 from app.schemas import SentenceQueryRequest, SentenceCollectRequest
 
 router = APIRouter(prefix="/api", tags=["sentences"])
@@ -13,10 +15,15 @@ router = APIRouter(prefix="/api", tags=["sentences"])
 
 @router.post("/sentence/query")
 async def query_sentence(req: SentenceQueryRequest, db: Session = Depends(get_db)):
-    """句子查词：拆句 -> 逐词查询"""
+    """句子查词：拆句 -> 逐词查询，并返回整句中文翻译"""
     sentence = req.sentence.strip()
     if not sentence:
         raise HTTPException(status_code=400, detail="请输入句子")
+
+    # 整句翻译与逐词查询并发进行，互不阻塞
+    translation_task = asyncio.create_task(
+        translate_mod.translate_en_to_zh(sentence)
+    )
 
     # 提取英文单词
     raw_words = re.findall(r'\b[a-zA-Z]+\b', sentence)
@@ -24,7 +31,8 @@ async def query_sentence(req: SentenceQueryRequest, db: Session = Depends(get_db
     unique_words = list(dict.fromkeys([w.lower() for w in raw_words]))
 
     if not unique_words:
-        return {"original": sentence, "words": []}
+        translation = await translation_task
+        return {"original": sentence, "translation": translation, "words": []}
 
     word_results = []
     for w in unique_words:
@@ -67,7 +75,8 @@ async def query_sentence(req: SentenceQueryRequest, db: Session = Depends(get_db
                 "audio_uk_url": None, "audio_us_url": None,
             })
 
-    return {"original": sentence, "words": word_results}
+    translation = await translation_task
+    return {"original": sentence, "translation": translation, "words": word_results}
 
 
 @router.post("/sentence/collect")

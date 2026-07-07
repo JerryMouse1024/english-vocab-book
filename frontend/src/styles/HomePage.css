@@ -105,6 +105,19 @@
   word-break: break-word;
 }
 
+.sentence-text-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.sentence-translation {
+  margin: 8px 0 0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 .sentence-actions {
   display: flex;
   gap: 10px;
