@@ -105,13 +105,15 @@ export default function HomePage() {
       alert('当前浏览器不支持语音朗读，请换用 Chrome / Edge 等现代浏览器');
       return;
     }
-    speakText(sentenceResult.original, {
+    console.log('[TTS] 开始朗读:', sentenceResult.original, '| 可用语音数:', getVoiceCount());
+    const ok = speakText(sentenceResult.original, {
       lang: 'en-US',
       rate: 0.9,
-      onStart: () => setSpeaking(true),
-      onEnd: () => setSpeaking(false),
-      onError: () => setSpeaking(false),
+      onStart: () => { console.log('[TTS] onstart 触发'); setSpeaking(true); },
+      onEnd: () => { console.log('[TTS] onend 触发'); setSpeaking(false); },
+      onError: (e) => { console.log('[TTS] onerror 触发:', e); setSpeaking(false); },
     });
+    if (!ok) console.warn('[TTS] speakText 返回 false（未发起朗读）');
   };
 
   return (
