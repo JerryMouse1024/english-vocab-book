@@ -308,8 +308,8 @@ export default function WordBookPage() {
             </p>
             <p className="confirm-hint">删除后不可恢复</p>
             <div className="confirm-actions">
-              <button className="confirm-cancel" onClick={() => setConfirmItem(null)}>取消</button>
               <button className="confirm-delete" onClick={handleDelete}>确认删除</button>
+              <button className="confirm-cancel" onClick={() => setConfirmItem(null)}>取消</button>
             </div>
           </div>
         </div>
