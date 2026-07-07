@@ -3,8 +3,23 @@ import json
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 
 from app.models import Word, Collection, ReviewRecord, SentenceCollection
+
+
+def normalize_word_key(word: str) -> str:
+    """
+    规范化查词缓存键：去首尾空白、转小写、去除首尾标点。
+
+    避免 'what is it?' 与 'what is it' 因句末标点（? ! . 等）键不一致，
+    导致缓存永远命中不了、重复回源 UAPI，进而触发 UNIQUE 约束冲突。
+    仅去除首尾标点，保留内部连字符与撇号（如 don't、well-known）。
+    """
+    if not word:
+        return ""
+    s = word.strip().lower()
+    return s.strip(" \t\r\n?.!;:，。！？；：、()（）")
 
 
 # ===== 单词缓存 =====
@@ -13,11 +28,10 @@ def get_word_by_name(db: Session, word: str) -> Word | None:
     return db.query(Word).filter(Word.word == word).first()
 
 
-def create_word(db: Session, word_data: dict) -> Word:
-    """从UAPI解析结果创建单词缓存记录"""
-    entry = word_data.get("entry", word_data)
-    word = Word(
-        word=entry.get("word", ""),
+def _build_word_entry(entry: dict) -> Word:
+    """根据 UAPI entry 构造 Word 对象（不含入库动作）"""
+    return Word(
+        word=(entry.get("word") or "").strip().lower(),
         phonetics_uk=(entry.get("phonetics", {}) or {}).get("uk", {}).get("text") if entry.get("phonetics") else None,
         phonetics_us=(entry.get("phonetics", {}) or {}).get("us", {}).get("text") if entry.get("phonetics") else None,
         audio_uk_url=(entry.get("phonetics", {}) or {}).get("uk", {}).get("audio") if entry.get("phonetics") else None,
@@ -30,10 +44,38 @@ def create_word(db: Session, word_data: dict) -> Word:
         synonyms=json.dumps(entry.get("synonyms", []), ensure_ascii=False) if entry.get("synonyms") else None,
         examples=json.dumps(entry.get("examples", []), ensure_ascii=False) if entry.get("examples") else None,
     )
-    db.add(word)
-    db.commit()
-    db.refresh(word)
-    return word
+
+
+def create_word(db: Session, word_data: dict) -> Word:
+    """
+    从 UAPI 解析结果创建/获取单词缓存记录（幂等 upsert）。
+
+    若单词已存在则直接返回已有记录，避免 UNIQUE 约束冲突导致的 500 错误。
+    并对并发插入做了 IntegrityError 兜底。
+    """
+    entry = word_data.get("entry", word_data)
+    word_text = normalize_word_key(entry.get("word") or "")
+    if not word_text:
+        word_text = "unknown"
+
+    # 已存在则直接返回
+    existing = db.query(Word).filter(Word.word == word_text).first()
+    if existing:
+        return existing
+
+    try:
+        word = _build_word_entry(entry)
+        db.add(word)
+        db.commit()
+        db.refresh(word)
+        return word
+    except IntegrityError:
+        # 并发插入导致冲突：回滚后返回已存在的记录
+        db.rollback()
+        existing = db.query(Word).filter(Word.word == word_text).first()
+        if existing:
+            return existing
+        raise
 
 
 def word_to_response(word: Word, is_collected: bool = False) -> dict:

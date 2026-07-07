@@ -15,18 +15,18 @@ router = APIRouter(prefix="/api", tags=["words"])
 @router.get("/word/{word}")
 async def lookup_word(word: str, db: Session = Depends(get_db)):
     """查询单词释义（优先本地缓存，否则代理UAPI，失败回退备选数据源）"""
-    word_lower = word.strip().lower()
-    if not word_lower:
+    word_key = crud.normalize_word_key(word)
+    if not word_key:
         raise HTTPException(status_code=400, detail="请输入单词")
 
     # 先查本地缓存
-    cached = crud.get_word_by_name(db, word_lower)
+    cached = crud.get_word_by_name(db, word_key)
     if cached:
         is_col = crud.is_collected(db, cached.id)
         return crud.word_to_response(cached, is_collected=is_col)
 
     # 调用 UAPI（含重试与备选数据源回退）
-    data = await uapi.lookup_word(word_lower)
+    data = await uapi.lookup_word(word_key)
     if data is None:
         raise HTTPException(status_code=404, detail="未找到该单词的释义")
 
@@ -38,15 +38,15 @@ async def lookup_word(word: str, db: Session = Depends(get_db)):
 @router.post("/word/collect")
 async def collect_word(req: WordCollectRequest, db: Session = Depends(get_db)):
     """收藏单词到单词本"""
-    word_lower = req.word.strip().lower()
-    if not word_lower:
+    word_key = crud.normalize_word_key(req.word)
+    if not word_key:
         raise HTTPException(status_code=400, detail="请输入单词")
 
     # 确保单词已在缓存中
-    word_record = crud.get_word_by_name(db, word_lower)
+    word_record = crud.get_word_by_name(db, word_key)
     if not word_record:
         # 先查词再缓存
-        data = await uapi.lookup_word(word_lower)
+        data = await uapi.lookup_word(word_key)
         if data is None:
             raise HTTPException(status_code=404, detail="未找到该单词的释义")
         word_record = crud.create_word(db, data)
@@ -77,12 +77,12 @@ async def list_words(
 @router.get("/word/{word}/audio/{accent}")
 async def get_word_audio(word: str, accent: str, db: Session = Depends(get_db)):
     """获取单词发音音频（优先本地缓存，否则代理UAPI，失败回退备选数据源）"""
-    word_lower = word.strip().lower()
+    word_key = crud.normalize_word_key(word)
     if accent not in ("uk", "us"):
         raise HTTPException(status_code=400, detail="accent 参数必须为 uk 或 us")
 
     # 先查本地缓存的音频URL
-    cached = crud.get_word_by_name(db, word_lower)
+    cached = crud.get_word_by_name(db, word_key)
     audio_url = None
     if cached:
         audio_url = cached.audio_uk_url if accent == "uk" else cached.audio_us_url
