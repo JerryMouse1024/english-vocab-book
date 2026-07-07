@@ -33,6 +33,8 @@ start.cmd
 
 `start.cmd` 会在依赖缺失时自动 `npm install`，并**每次都重新构建前端**（`npm run build`，通常不到 1 秒），确保你拉取的最新代码改动都能生效，然后启动后端。
 
+> ⚠️ **首次运行前必须先把 Python 依赖装好**（见下方「方式二 · 第一步」）。`start.cmd` 只负责前端依赖和启动，**不会安装 Python 依赖**；未安装就双击会报 `ModuleNotFoundError`。依赖只需装一次。
+
 ### 方式二：手动启动
 
 **第一步：安装 Python 依赖（只需执行一次）**
@@ -42,7 +44,13 @@ cd backend
 pip install -r requirements.txt
 ```
 
-> - Linux 若提示环境受限，可加 `--break-system-packages`；Windows 不需要该参数。
+如果 `pip` 不在 PATH，或 Linux 提示环境受限（externally-managed），可用下面这条等价命令（也是本项目实际使用的写法）：
+
+```bash
+python3.11 -m pip install --break-system-packages fastapi uvicorn sqlalchemy httpx pydantic
+```
+
+> - `--break-system-packages` 主要用于 Linux 受限环境；Windows 通常不加也能装，但加上无害。
 > - 启动项目本身**不需要**重复安装依赖，只有首次或依赖缺失时才装。
 
 **第二步：构建前端（只需在首次或前端代码改动后执行）**
