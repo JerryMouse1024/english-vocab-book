@@ -8,7 +8,6 @@ export default function Navbar() {
     { path: '/', label: '查词', icon: '🔍' },
     { path: '/wordbook', label: '收藏本', icon: '📖' },
     { path: '/review', label: '每日复习', icon: '📝' },
-    { path: '/sentences', label: '句子收藏', icon: '💬' },
   ];
 
   return (

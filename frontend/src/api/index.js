@@ -33,10 +33,10 @@ export const querySentence = (sentence) =>
 export const collectSentence = (original, translation = null, wordsJson = null) =>
   api.post('/sentence/collect', { original, translation, words_json: wordsJson });
 
-// 获取句子收藏列表
+// 获取收藏本中的句子列表（与单词合并展示在收藏本）
 export const getSentences = () => api.get('/sentences');
 
-// 删除句子收藏
+// 删除收藏本中的句子
 export const deleteSentence = (id) => api.delete(`/sentence/${id}`);
 
 // 获取发音音频URL（单词词典发音）
