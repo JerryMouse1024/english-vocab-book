@@ -37,8 +37,15 @@ def calculate_next_review(stage: int, result: str) -> tuple:
         next_review = now + timedelta(days=interval)
         return new_stage, next_review, False
     else:
-        # 失败：重置到阶段0，明天再复习
-        return 0, now + timedelta(days=1), False
+        # 失败：阶梯回退（不直接归零）
+        #   阶段 0-3 → 回退 1 个阶段
+        #   阶段 4-7 → 回退 2 个阶段
+        if stage <= 3:
+            new_stage = max(0, stage - 1)
+        else:
+            new_stage = max(0, stage - 2)
+        next_review = now + timedelta(days=1)
+        return new_stage, next_review, False
 
 
 def get_today_review_tasks(db: Session) -> list:

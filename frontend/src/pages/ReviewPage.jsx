@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getTodayReview, completeReview } from '../api';
 import WordCard from '../components/WordCard';
 import PhoneticPlayer from '../components/PhoneticPlayer';
@@ -9,9 +9,11 @@ export default function ReviewPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [completed, setCompleted] = useState(0);
+  const [passedCount, setPassedCount] = useState(0);
+  const [totalTasks, setTotalTasks] = useState(0);
   const [finished, setFinished] = useState(false);
   const [error, setError] = useState(null);
+  const passedIds = useRef(new Set());
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -19,7 +21,9 @@ export default function ReviewPage() {
     try {
       const res = await getTodayReview();
       setTasks(res.data.tasks);
-      setCompleted(0);
+      setTotalTasks(res.data.tasks.length);
+      setPassedCount(0);
+      passedIds.current = new Set();
       setCurrentIndex(0);
       setShowMeaning(false);
       setFinished(false);
@@ -39,14 +43,48 @@ export default function ReviewPage() {
     if (!task) return;
 
     try {
-      await completeReview(task.id, result, task.kind || 'word');
-      setCompleted((c) => c + 1);
+      const res = await completeReview(task.id, result, task.kind || 'word');
       setShowMeaning(false);
 
-      if (currentIndex + 1 >= tasks.length) {
-        setFinished(true);
+      if (result === 'pass') {
+        // 记住：标记为已通过，移出队列
+        passedIds.current.add(task.id);
+        const newPassed = passedIds.current.size;
+        setPassedCount(newPassed);
+
+        if (newPassed >= totalTasks && totalTasks > 0) {
+          setFinished(true);
+          return;
+        }
+
+        // 从队列中移除当前项
+        const newTasks = [...tasks];
+        newTasks.splice(currentIndex, 1);
+        setTasks(newTasks);
+
+        if (newTasks.length === 0) {
+          // 全部通过
+          setFinished(true);
+        } else if (currentIndex >= newTasks.length) {
+          setCurrentIndex(0);
+        }
+        // currentIndex 不变，下一项自动滑入
       } else {
-        setCurrentIndex(currentIndex + 1);
+        // 忘记：更新阶段信息，排到队尾
+        const updatedTask = {
+          ...task,
+          stage: res.data.new_stage,
+          review_count: (task.review_count || 0) + 1,
+        };
+        const newTasks = [...tasks];
+        newTasks.splice(currentIndex, 1);
+        newTasks.push(updatedTask);
+        setTasks(newTasks);
+
+        if (currentIndex >= newTasks.length) {
+          setCurrentIndex(0);
+        }
+        // currentIndex 不变，下一项自动滑入
       }
     } catch (err) {
       alert('提交失败，请重试');
@@ -75,7 +113,7 @@ export default function ReviewPage() {
         <div className="review-finished">
           <div className="finished-icon">🎉</div>
           <h2>今日复习完成！</h2>
-          <p>共完成 {completed} 项复习</p>
+          <p>共通过 {passedCount} 项（初始 {totalTasks} 项）</p>
           <p className="finished-tip">坚持就是胜利，明天继续加油！</p>
         </div>
       </div>
@@ -105,10 +143,10 @@ export default function ReviewPage() {
         <div className="progress-bar">
           <div
             className="progress-fill"
-            style={{ width: `${(completed / tasks.length) * 100}%` }}
+            style={{ width: `${totalTasks > 0 ? (passedCount / totalTasks) * 100 : 0}%` }}
           />
         </div>
-        <span className="progress-text">{completed} / {tasks.length}</span>
+        <span className="progress-text">{passedCount} / {totalTasks}</span>
       </div>
 
       {wordCount > 0 && sentenceCount > 0 && (
@@ -177,7 +215,7 @@ export default function ReviewPage() {
       </div>
 
       <div className="review-queue">
-        <p>剩余 {tasks.length - currentIndex - 1} 项</p>
+        <p>队列剩余 {tasks.length} 项 · 已通过 {passedCount} 项</p>
       </div>
     </div>
   );

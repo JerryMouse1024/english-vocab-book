@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence, updateWordDefs } from '../api';
 import { Link } from 'react-router-dom';
 import WordCard from '../components/WordCard';
+import PhoneticPlayer from '../components/PhoneticPlayer';
 import '../styles/WordBookPage.css';
 
 const STAGE_LABELS = {
@@ -226,16 +227,14 @@ export default function WordBookPage() {
                 <h2 className="drawer-title">{drawerItem.word}</h2>
                 {(drawerItem.phonetics_uk || drawerItem.phonetics_us) && (
                   <div className="drawer-phonetic">
-                    {drawerItem.phonetics_uk && (
-                      <span>英 /{drawerItem.phonetics_uk}/</span>
-                    )}
-                    {drawerItem.phonetics_us && (
-                      <span style={{ marginLeft: 16 }}>美 /{drawerItem.phonetics_us}/</span>
-                    )}
+                    <PhoneticPlayer
+                      word={drawerItem.word}
+                      phoneticsUk={drawerItem.phonetics_uk}
+                      phoneticsUs={drawerItem.phonetics_us}
+                    />
                   </div>
                 )}
                 <div className="drawer-section">
-                  <h3>释义 & 例句</h3>
                   {editing ? (
                     <div className="drawer-edit-row">
                       <textarea

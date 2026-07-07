@@ -26,6 +26,7 @@ export default function WordCard({
 
   return (
     <div className={`word-card ${compact ? 'compact' : ''}`}>
+      {!compact && (
       <div className="word-card-header">
         <h2 className="word-title">{word}</h2>
         <PhoneticPlayer
@@ -41,6 +42,7 @@ export default function WordCard({
           />
         )}
       </div>
+      )}
 
       {exam_tags && exam_tags.length > 0 && (
         <div className="exam-tags">
