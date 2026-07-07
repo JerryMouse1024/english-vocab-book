@@ -19,7 +19,6 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   // 句子相关状态
   const [sentenceCollected, setSentenceCollected] = useState(false);
-  const [showWordDetail, setShowWordDetail] = useState(false);
   // 音频播放 ref
   const audioRef = useRef(null);
 
@@ -31,7 +30,6 @@ export default function HomePage() {
     setResults(null);
     setSentenceResult(null);
     setSentenceCollected(false);
-    setShowWordDetail(false);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -178,30 +176,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* 可展开的逐词详情 */}
-            {sentenceResult.words.length > 0 && (
-              <div className="sentence-word-detail">
-                <button
-                  className="toggle-detail-btn"
-                  onClick={() => setShowWordDetail(!showWordDetail)}
-                >
-                  {showWordDetail ? '▼ 收起逐词解析' : '▶ 展开逐词解析'}
-                  ({sentenceResult.words.filter((w) => !w.error).length}/{sentenceResult.words.length} 词)
-                </button>
-                {showWordDetail && (
-                  <div className="sentence-words-list">
-                    {sentenceResult.words.map((w, i) => (
-                      <WordCard
-                        key={`${w.word}-${i}`}
-                        wordData={{ ...w, is_collected: w.is_collected || false }}
-                        onCollect={handleCollect}
-                        compact
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
