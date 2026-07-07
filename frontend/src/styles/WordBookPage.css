@@ -124,7 +124,7 @@
 
 .detail-drawer {
   position: fixed;
-  top: 0;
+  top: 56px; /* 导航栏高度 */
   right: 0;
   bottom: 0;
   z-index: 99;
