@@ -56,6 +56,33 @@
   font-weight: 800;
   color: var(--primary-dark);
   margin-bottom: 12px;
+  word-break: break-word;
+}
+
+/* 句子复习时标题稍小 */
+.review-word.sentence-word {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* 今日复习类型统计 */
+.review-types {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* 句子翻译展示 */
+.review-sentence-trans {
+  padding: 16px 0;
+}
+
+.sentence-trans-text {
+  font-size: 18px;
+  color: #334155;
+  line-height: 1.6;
+  text-align: center;
 }
 
 .stage-info {

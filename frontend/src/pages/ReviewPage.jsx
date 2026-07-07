@@ -39,7 +39,7 @@ export default function ReviewPage() {
     if (!task) return;
 
     try {
-      await completeReview(task.collection_id, result);
+      await completeReview(task.id, result, task.kind || 'word');
       setCompleted((c) => c + 1);
       setShowMeaning(false);
 
@@ -52,6 +52,9 @@ export default function ReviewPage() {
       alert('提交失败，请重试');
     }
   };
+
+  const wordCount = tasks.filter((t) => t.kind === 'word').length;
+  const sentenceCount = tasks.filter((t) => t.kind === 'sentence').length;
 
   if (loading) {
     return <div className="review-page"><div className="loading">加载复习任务...</div></div>;
@@ -72,7 +75,7 @@ export default function ReviewPage() {
         <div className="review-finished">
           <div className="finished-icon">🎉</div>
           <h2>今日复习完成！</h2>
-          <p>共完成 {completed} 个单词的复习</p>
+          <p>共完成 {completed} 项复习</p>
           <p className="finished-tip">坚持就是胜利，明天继续加油！</p>
         </div>
       </div>
@@ -84,14 +87,15 @@ export default function ReviewPage() {
       <div className="review-page">
         <div className="review-empty">
           <div className="empty-icon">✅</div>
-          <h2>今天没有需要复习的单词</h2>
-          <p>去查词页面收藏新单词吧！</p>
+          <h2>今天没有需要复习的内容</h2>
+          <p>去查词页面收藏新单词或句子吧！</p>
         </div>
       </div>
     );
   }
 
   const current = tasks[currentIndex];
+  const isSentence = current.kind === 'sentence';
 
   return (
     <div className="review-page">
@@ -107,14 +111,24 @@ export default function ReviewPage() {
         <span className="progress-text">{completed} / {tasks.length}</span>
       </div>
 
+      {wordCount > 0 && sentenceCount > 0 && (
+        <div className="review-types">
+          今日: {wordCount > 0 ? `${wordCount} 个单词` : ''}{wordCount > 0 && sentenceCount > 0 ? ' · ' : ''} {sentenceCount > 0 ? `${sentenceCount} 个句子` : ''}
+        </div>
+      )}
+
       <div className="review-card">
         <div className="review-word-display">
-          <h2 className="review-word">{current.word}</h2>
-          <PhoneticPlayer
-            word={current.word}
-            phoneticsUk={current.phonetics_uk}
-            phoneticsUs={current.phonetics_us}
-          />
+          <h2 className={`review-word ${isSentence ? 'sentence-word' : ''}`}>
+            {isSentence ? current.original : current.word}
+          </h2>
+          {!isSentence && (
+            <PhoneticPlayer
+              word={current.word}
+              phoneticsUk={current.phonetics_uk}
+              phoneticsUs={current.phonetics_us}
+            />
+          )}
           <span className="stage-info">
             阶段 {current.stage} · 已复习 {current.review_count} 次
           </span>
@@ -129,14 +143,20 @@ export default function ReviewPage() {
           </button>
         ) : (
           <div className="review-meaning">
-            <WordCard
-              wordData={{
-                word: current.word,
-                definitions: current.definitions,
-                examples: current.examples,
-              }}
-              compact
-            />
+            {isSentence ? (
+              <div className="review-sentence-trans">
+                <p className="sentence-trans-text">{current.translation || '（无翻译）'}</p>
+              </div>
+            ) : (
+              <WordCard
+                wordData={{
+                  word: current.word,
+                  definitions: current.definitions,
+                  examples: current.examples,
+                }}
+                compact
+              />
+            )}
 
             <div className="review-actions">
               <button
@@ -157,7 +177,7 @@ export default function ReviewPage() {
       </div>
 
       <div className="review-queue">
-        <p>剩余 {tasks.length - currentIndex - 1} 个单词</p>
+        <p>剩余 {tasks.length - currentIndex - 1} 项</p>
       </div>
     </div>
   );

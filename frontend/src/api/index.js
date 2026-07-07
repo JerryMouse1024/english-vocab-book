@@ -22,8 +22,8 @@ export const getWordList = (params = {}) => api.get('/words', { params });
 export const getTodayReview = () => api.get('/review/today');
 
 // 完成复习
-export const completeReview = (id, result) =>
-  api.post(`/review/complete/${id}`, { result });
+export const completeReview = (id, result, kind = 'word') =>
+  api.post(`/review/complete/${id}`, { result, kind });
 
 // 句子查词
 export const querySentence = (sentence) =>
