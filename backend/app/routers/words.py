@@ -52,7 +52,7 @@ async def collect_word(req: WordCollectRequest, db: Session = Depends(get_db)):
         word_record = crud.create_word(db, data)
 
     collection = crud.create_collection(db, word_record.id, req.note)
-    return {"id": collection.id, "message": "收藏成功", "word": word_lower}
+    return {"id": collection.id, "message": "收藏成功", "word": word_key}
 
 
 @router.delete("/word/collect/{collection_id}")
