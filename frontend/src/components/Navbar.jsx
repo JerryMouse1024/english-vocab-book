@@ -12,7 +12,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">英语单词本</div>
+      <div className="navbar-brand">英语记忆手册</div>
       <div className="navbar-links">
         {links.map(({ path, label, icon }) => (
           <Link

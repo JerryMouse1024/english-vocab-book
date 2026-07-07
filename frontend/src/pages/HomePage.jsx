@@ -115,7 +115,7 @@ export default function HomePage() {
   return (
     <div className="home-page">
       <div className="hero-section">
-        <h1>英语单词本</h1>
+        <h1>英语记忆手册</h1>
         <p className="hero-subtitle">输入单词、短语或句子，查询释义、整句翻译与发音，科学复习记忆</p>
         <SearchBar
           value={input}
