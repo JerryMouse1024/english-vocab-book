@@ -27,25 +27,36 @@ def init_db():
     cursor.execute("PRAGMA table_info(sentence_collections)")
     existing_cols = {row[1] for row in cursor.fetchall()}
 
+    # SQLite 要求非空列有常量默认值，用哨兵值 2000-01-01 标记
+    SENTINEL = "2000-01-01 00:00:00"
     new_columns = {
         "review_stage": "INTEGER NOT NULL DEFAULT 0",
-        "next_review": "DATETIME NOT NULL DEFAULT '2000-01-01 00:00:00'",
+        "next_review": f"DATETIME NOT NULL DEFAULT '{SENTINEL}'",
         "review_count": "INTEGER NOT NULL DEFAULT 0",
         "mastered": "INTEGER NOT NULL DEFAULT 0",
     }
 
+    added_any = False
     for col_name, col_def in new_columns.items():
         if col_name not in existing_cols:
             cursor.execute(f"ALTER TABLE sentence_collections ADD COLUMN {col_name} {col_def}")
+            added_any = True
 
-    # 将 next_review 默认值修正为当前时间（仅对刚添加的列）
-    if any(c not in existing_cols for c in new_columns):
-        from datetime import datetime
-        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute(f"UPDATE sentence_collections SET next_review = ? WHERE next_review = '2000-01-01 00:00:00'", (now_str,))
+    # 每次启动都修复残留的哨兵值为当前时间（幂等，安全）
+    from datetime import datetime
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute(
+        f"UPDATE sentence_collections SET next_review = ? WHERE next_review = ?",
+        (now_str, SENTINEL),
+    )
+    fixed_rows = cursor.rowcount
 
     conn.commit()
     conn.close()
+
+    if added_any or fixed_rows > 0:
+        print(f"[DB迁移] 已为 sentence_collections 补充复习字段" +
+              (f"，修正了 {fixed_rows} 条记录的 next_review" if fixed_rows > 0 else ""))
 
 
 def get_db():
