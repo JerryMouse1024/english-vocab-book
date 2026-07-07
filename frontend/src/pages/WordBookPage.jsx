@@ -26,7 +26,7 @@ export default function WordBookPage() {
     setLoading(true);
     try {
       const [wordRes, sentRes] = await Promise.all([
-        getWordList({ q: search || undefined, page: 1, size: 200 }),
+        getWordList({ q: search || undefined, page: 1, size: 1000 }),
         getSentences(),
       ]);
       const words = (wordRes.data.items || []).map((w) => ({ ...w, kind: 'word' }));
@@ -45,7 +45,7 @@ export default function WordBookPage() {
         : sentences;
 
       setWordTotal(wordRes.data.total || 0);
-      setSentenceTotal(sentRes.data.total || 0);
+      setSentenceTotal(sentRes.data.items?.length || 0);
       // 单词在前，句子在后
       setItems([...filteredWords, ...filteredSentences]);
     } catch (err) {

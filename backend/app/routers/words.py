@@ -67,7 +67,7 @@ async def remove_collection(collection_id: int, db: Session = Depends(get_db)):
 async def list_words(
     q: str = Query(None, description="搜索关键词"),
     page: int = Query(1, ge=1),
-    size: int = Query(20, ge=1, le=100),
+    size: int = Query(20, ge=1, le=1000),
     db: Session = Depends(get_db),
 ):
     """获取单词本列表"""
