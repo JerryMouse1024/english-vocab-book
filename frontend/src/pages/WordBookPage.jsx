@@ -95,14 +95,26 @@ export default function WordBookPage() {
       <p className="wordbook-sub">已收藏的单词与句子都在这里</p>
 
       <div className="wordbook-search">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="搜索已收藏的单词或句子..."
-          className="search-input"
-        />
+        <div className="search-input-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="搜索已收藏的单词或句子..."
+            className="search-input"
+          />
+          {search && (
+            <button
+              className="search-clear-btn"
+              onClick={() => { setSearch(''); fetchAll(); }}
+              title="清空搜索"
+              type="button"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <button onClick={handleSearch} className="search-btn">搜索</button>
       </div>
 

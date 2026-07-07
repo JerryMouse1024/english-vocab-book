@@ -15,6 +15,41 @@
   margin-bottom: 16px;
 }
 
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: #e2e8f0;
+  border-radius: 50%;
+  color: #64748b;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.15s;
+}
+
+.search-clear-btn:hover {
+  background: #cbd5e1;
+  color: #334155;
+}
+
+/* 搜索框右侧留出清空按钮空间 */
+.wordbook-search .search-input {
+  padding-right: 40px;
+}
+
 .wordbook-stats {
   display: flex;
   align-items: center;
