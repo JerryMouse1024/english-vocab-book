@@ -88,20 +88,9 @@ async def collect_sentence(req: SentenceCollectRequest, db: Session = Depends(ge
 
 @router.get("/sentences")
 async def list_sentences(db: Session = Depends(get_db)):
-    """获取句子收藏列表"""
+    """获取句子收藏列表（含复习状态）"""
     items = crud.get_sentence_list(db)
-    return {
-        "items": [
-            {
-                "id": s.id,
-                "original": s.original,
-                "translation": s.translation,
-                "words_json": s.words_json,
-                "collected_at": s.collected_at.isoformat(),
-            }
-            for s in items
-        ]
-    }
+    return {"items": items}
 
 
 @router.delete("/sentence/{sentence_id}")

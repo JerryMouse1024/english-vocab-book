@@ -141,7 +141,6 @@
 .badge-progress {  /* 4~7天 */      background: #fef3c7; color: #d97706; }
 .badge-solid {     /* 15~90天 */    background: #d1fae5; color: #059669; }
 .badge-mastered {  /* 已掌握 */     background: #059669; color: #fff; }
-.badge-sentence {  /* 句子 */       background: #f3e8ff; color: #7c3aed; }
 
 .delete-btn {
   flex-shrink: 0;

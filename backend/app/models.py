@@ -59,11 +59,34 @@ class ReviewRecord(Base):
 
 
 class SentenceCollection(Base):
-    """句子收藏表"""
+    """句子收藏表（支持艾宾浩斯复习）"""
     __tablename__ = "sentence_collections"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     original = Column(Text, nullable=False)
     translation = Column(Text, nullable=True)
     words_json = Column(Text, nullable=True)
+    review_stage = Column(Integer, nullable=False, default=0)
+    next_review = Column(DateTime, nullable=False, default=datetime.now)
+    review_count = Column(Integer, nullable=False, default=0)
+    mastered = Column(Integer, nullable=False, default=0)
     collected_at = Column(DateTime, default=datetime.now)
+
+    __table_args__ = (
+        Index("idx_sentence_collections_next_review", "next_review"),
+    )
+
+
+class SentenceReviewRecord(Base):
+    """句子复习记录表"""
+    __tablename__ = "sentence_review_records"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sentence_collection_id = Column(Integer, ForeignKey("sentence_collections.id", ondelete="CASCADE"), nullable=False)
+    stage = Column(Integer, nullable=False)
+    reviewed_at = Column(DateTime, default=datetime.now)
+    result = Column(String(10), nullable=False, default="pass")
+
+    __table_args__ = (
+        Index("idx_sentence_review_records_scid", "sentence_collection_id"),
+    )

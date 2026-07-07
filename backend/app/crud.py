@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
-from app.models import Word, Collection, ReviewRecord, SentenceCollection
+from app.models import Word, Collection, ReviewRecord, SentenceCollection, SentenceReviewRecord
 
 
 def normalize_word_key(word: str) -> str:
@@ -189,6 +189,8 @@ def create_sentence_collection(db: Session, original: str, translation: str | No
         original=original,
         translation=translation,
         words_json=words_json,
+        review_stage=0,
+        next_review=datetime.now(),
     )
     db.add(sc)
     db.commit()
@@ -197,7 +199,21 @@ def create_sentence_collection(db: Session, original: str, translation: str | No
 
 
 def get_sentence_list(db: Session):
-    return db.query(SentenceCollection).order_by(SentenceCollection.collected_at.desc()).all()
+    rows = db.query(SentenceCollection).order_by(SentenceCollection.collected_at.desc()).all()
+    return [
+        {
+            "id": s.id,
+            "original": s.original,
+            "translation": s.translation,
+            "words_json": s.words_json,
+            "review_stage": s.review_stage,
+            "review_count": s.review_count,
+            "next_review": s.next_review,
+            "mastered": bool(s.mastered),
+            "collected_at": s.collected_at.isoformat(),
+        }
+        for s in rows
+    ]
 
 
 def delete_sentence(db: Session, sentence_id: int) -> bool:
@@ -207,3 +223,19 @@ def delete_sentence(db: Session, sentence_id: int) -> bool:
     db.delete(sc)
     db.commit()
     return True
+
+
+def get_sentence_collection_by_id(db: Session, sentence_id: int) -> SentenceCollection | None:
+    return db.query(SentenceCollection).filter(SentenceCollection.id == sentence_id).first()
+
+
+def create_sentence_review_record(db: Session, sentence_collection_id: int, stage: int, result: str) -> SentenceReviewRecord:
+    record = SentenceReviewRecord(
+        sentence_collection_id=sentence_collection_id,
+        stage=stage,
+        result=result,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return record

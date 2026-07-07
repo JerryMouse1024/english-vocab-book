@@ -81,7 +81,7 @@ export default function WordBookPage() {
   };
 
   const dueCount = items.filter(
-    (w) => w.kind === 'word' && !w.mastered && new Date(w.next_review) <= new Date()
+    (item) => !item.mastered && new Date(item.next_review) <= new Date()
   ).length;
 
   /** 双击打开抽屉 */
@@ -139,7 +139,7 @@ export default function WordBookPage() {
       <div className="wordbook-stats">
         共 {wordTotal} 个单词 · {sentenceTotal} 个句子
         <Link to="/review" className="review-link">
-          {dueCount > 0 ? `📝 今日有 ${dueCount} 个单词待复习` : '📝 去复习'}
+          {dueCount > 0 ? `📝 今日有 ${dueCount} 项待复习` : '📝 去复习'}
         </Link>
       </div>
 
@@ -157,8 +157,8 @@ export default function WordBookPage() {
             <span className="row-text" title={item.kind === 'word' ? item.word : item.original}>
               {item.kind === 'word' ? item.word : item.original}
             </span>
-            <span className={`row-badge ${item.kind === 'word' ? getBadgeClass(item) : 'badge-sentence'}`}>
-              {item.kind === 'word' ? getBadgeLabel(item) : '句子'}
+            <span className={`row-badge ${getBadgeClass(item)}`}>
+              {getBadgeLabel(item)}
             </span>
           </div>
         ))}

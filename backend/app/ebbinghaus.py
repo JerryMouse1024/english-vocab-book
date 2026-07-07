@@ -1,7 +1,7 @@
 """艾宾浩斯遗忘曲线复习算法"""
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from app.models import Collection, Word
+from app.models import Collection, Word, SentenceCollection
 import json
 
 # 艾宾浩斯复习间隔（天数）
@@ -43,10 +43,12 @@ def calculate_next_review(stage: int, result: str) -> tuple:
 
 def get_today_review_tasks(db: Session) -> list:
     """
-    查询今日需要复习的单词列表
+    查询今日需要复习的列表（单词 + 句子）
     """
     now = datetime.now()
-    rows = (
+
+    # --- 单词 ---
+    word_rows = (
         db.query(Collection, Word)
         .join(Word, Collection.word_id == Word.id)
         .filter(Collection.next_review <= now, Collection.mastered == 0)
@@ -55,8 +57,10 @@ def get_today_review_tasks(db: Session) -> list:
     )
 
     tasks = []
-    for coll, word in rows:
+    for coll, word in word_rows:
         tasks.append({
+            "id": coll.id,
+            "kind": "word",
             "collection_id": coll.id,
             "word_id": word.id,
             "word": word.word,
@@ -68,6 +72,25 @@ def get_today_review_tasks(db: Session) -> list:
             "examples": json.loads(word.examples) if word.examples else None,
             "stage": coll.review_stage,
             "review_count": coll.review_count,
+        })
+
+    # --- 句子 ---
+    sentence_rows = (
+        db.query(SentenceCollection)
+        .filter(SentenceCollection.next_review <= now, SentenceCollection.mastered == 0)
+        .order_by(SentenceCollection.next_review.asc())
+        .all()
+    )
+
+    for sc in sentence_rows:
+        tasks.append({
+            "id": sc.id,
+            "kind": "sentence",
+            "sentence_collection_id": sc.id,
+            "original": sc.original,
+            "translation": sc.translation,
+            "stage": sc.review_stage,
+            "review_count": sc.review_count,
         })
 
     return tasks
