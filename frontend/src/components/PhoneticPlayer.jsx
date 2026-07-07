@@ -22,7 +22,9 @@ export default function PhoneticPlayer({ word, phoneticsUk, phoneticsUs }) {
           onClick={() => play('uk')}
           title="英式发音"
         >
-          🇬🇧 {phoneticsUk} {playing === 'uk' ? '🔊' : '🔈'}
+          <span className="phonetic-label">英</span>
+          <span className="phonetic-text">/{phoneticsUk}/</span>
+          {playing === 'uk' ? '🔊' : '🔈'}
         </button>
       )}
       {phoneticsUs && (
@@ -31,7 +33,9 @@ export default function PhoneticPlayer({ word, phoneticsUk, phoneticsUs }) {
           onClick={() => play('us')}
           title="美式发音"
         >
-          🇺🇸 {phoneticsUs} {playing === 'us' ? '🔊' : '🔈'}
+          <span className="phonetic-label">美</span>
+          <span className="phonetic-text">/{phoneticsUs}/</span>
+          {playing === 'us' ? '🔊' : '🔈'}
         </button>
       )}
     </div>

@@ -125,32 +125,53 @@
   color: var(--text-secondary);
 }
 
-/* 发音按钮 */
+/* 发音按钮 - 胶囊形风格 */
 .phonetic-player {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .phonetic-btn {
-  padding: 6px 12px;
-  background: #f1f5f9;
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f0f4f8;
+  border: 1px solid #dde4ed;
+  border-radius: 24px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
   transition: all var(--transition);
   white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.phonetic-label {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.phonetic-text {
+  color: #64748b;
+  font-family: "Lucida Grande", "Segoe UI", sans-serif;
 }
 
 .phonetic-btn:hover {
   background: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
 .phonetic-btn.playing {
   background: var(--primary-light);
   color: white;
   border-color: var(--primary);
+}
+
+.phonetic-btn.playing .phonetic-label,
+.phonetic-btn.playing .phonetic-text {
+  color: white;
 }
 
 /* 收藏按钮 */
