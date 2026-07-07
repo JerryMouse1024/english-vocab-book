@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
-import { getSentences, deleteSentence } from '../api';
-import { speakText, isTTSAvailable } from '../utils/tts';
+import { useState, useEffect, useRef } from 'react';
+import { getSentences, deleteSentence, getSentenceAudioUrl } from '../api';
 import '../styles/SentencesPage.css';
 
 export default function SentencesPage() {
   const [sentences, setSentences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  // 音频播放 ref
+  const audioRef = useRef(null);
 
   const fetchSentences = async () => {
     setLoading(true);
@@ -34,9 +35,22 @@ export default function SentencesPage() {
     }
   };
 
+  // 朗读指定句子
+  const playSentence = (original) => {
+    if (!original) return;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.src = getSentenceAudioUrl(original);
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
   return (
     <div className="sentences-page">
       <h1>句子收藏</h1>
+      {/* 隐藏的音频元素 */}
+      <audio ref={audioRef} preload="none" style={{ display: 'none' }} />
 
       {loading && <div className="loading">加载中...</div>}
 
@@ -59,11 +73,7 @@ export default function SentencesPage() {
                 title="朗读该句"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (!isTTSAvailable()) {
-                    alert('当前浏览器不支持语音朗读，请换用 Chrome / Edge 等现代浏览器');
-                    return;
-                  }
-                  speakText(s.original, { lang: 'en-US', rate: 0.9 });
+                  playSentence(s.original);
                 }}
               >
                 🔈

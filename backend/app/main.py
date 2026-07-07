@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.database import init_db
-from app.routers import words, review, sentences
+from app.routers import words, review, sentences, tts
 
 app = FastAPI(
     title="英语单词本 API",
@@ -40,6 +40,7 @@ if os.path.exists(FRONTEND_DIST):
 app.include_router(words.router)
 app.include_router(review.router)
 app.include_router(sentences.router)
+app.include_router(tts.router)
 
 
 @app.get("/")

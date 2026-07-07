@@ -39,8 +39,12 @@ export const getSentences = () => api.get('/sentences');
 // 删除句子收藏
 export const deleteSentence = (id) => api.delete(`/sentence/${id}`);
 
-// 获取发音音频URL
+// 获取发音音频URL（单词词典发音）
 export const getAudioUrl = (word, accent = 'us') =>
   `/api/word/${encodeURIComponent(word)}/audio/${accent}`;
+
+// 整句朗读 TTS 音频URL（在线TTS，返回MP3流）
+export const getSentenceAudioUrl = (text, lang = 'en-US') =>
+  `/api/tts?${new URLSearchParams({ text, lang })}`;
 
 export default api;

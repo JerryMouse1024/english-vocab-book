@@ -1,15 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import SearchBar from '../components/SearchBar';
 import WordCard from '../components/WordCard';
-import { lookupWord, querySentence, collectWord, deleteCollection, collectSentence } from '../api';
-import { speakText, stopSpeaking, isTTSAvailable } from '../utils/tts';
+import { lookupWord, querySentence, collectWord, deleteCollection, collectSentence, getSentenceAudioUrl } from '../api';
 import '../styles/HomePage.css';
 
 // 判断输入是「单个单词」还是「短语/句子」
 function isSingleWord(input) {
   const trimmed = input.trim();
   const tokens = trimmed.split(/\s+/).filter(Boolean);
-  // 只有一个 token，且由字母、撇号、连字符组成（如 don't / well-known）
   return tokens.length === 1 && /^[a-zA-Z][a-zA-Z'’-]*$/.test(tokens[0]);
 }
 
@@ -22,7 +20,8 @@ export default function HomePage() {
   // 句子相关状态
   const [sentenceCollected, setSentenceCollected] = useState(false);
   const [showWordDetail, setShowWordDetail] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
+  // 音频播放 ref
+  const audioRef = useRef(null);
 
   const handleSearch = async () => {
     const trimmed = input.trim();
@@ -33,16 +32,17 @@ export default function HomePage() {
     setSentenceResult(null);
     setSentenceCollected(false);
     setShowWordDetail(false);
-    stopSpeaking();
-    setSpeaking(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.src = '';
+    }
 
     try {
       if (isSingleWord(trimmed)) {
-        // 单个单词 -> 词典卡片
         const res = await lookupWord(trimmed);
         setResults(res.data);
       } else {
-        // 短语 / 句子 -> 整句卡片（含翻译 + 朗读 + 逐词详情）
         const res = await querySentence(trimmed);
         const failed = res.data.words.filter((w) => w.error).length;
         setSentenceResult(res.data);
@@ -98,22 +98,17 @@ export default function HomePage() {
     }
   };
 
-  // 整句朗读（浏览器原生 TTS）
-  const speakSentence = () => {
+  // 整句朗读（通过在线 TTS 音频流）
+  const playSentence = () => {
     if (!sentenceResult) return;
-    if (!isTTSAvailable()) {
-      alert('当前浏览器不支持语音朗读，请换用 Chrome / Edge 等现代浏览器');
-      return;
+    if (audioRef.current) {
+      // 停止当前正在播放的
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      // 设置新的音频源并播放
+      audioRef.current.src = getSentenceAudioUrl(sentenceResult.original);
+      audioRef.current.play().catch(() => {});
     }
-    console.log('[TTS] 开始朗读:', sentenceResult.original, '| 可用语音数:', getVoiceCount());
-    const ok = speakText(sentenceResult.original, {
-      lang: 'en-US',
-      rate: 0.9,
-      onStart: () => { console.log('[TTS] onstart 触发'); setSpeaking(true); },
-      onEnd: () => { console.log('[TTS] onend 触发'); setSpeaking(false); },
-      onError: (e) => { console.log('[TTS] onerror 触发:', e); setSpeaking(false); },
-    });
-    if (!ok) console.warn('[TTS] speakText 返回 false（未发起朗读）');
   };
 
   return (
@@ -140,7 +135,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 单个单词：词典卡片（自带英/美发音） */}
+      {/* 单个单词：词典卡片 */}
       {results && (
         <div className="results-section">
           <WordCard
@@ -162,14 +157,14 @@ export default function HomePage() {
                 )}
               </div>
               <div className="sentence-actions">
-                {/* 整句朗读 */}
+                {/* 整句朗读 —— 用 <audio> 播放 TTS 音频流 */}
+                <audio ref={audioRef} preload="none" style={{ display: 'none' }} />
                 <button
-                  className={`speak-btn ${speaking ? 'speaking' : ''}`}
-                  onClick={speakSentence}
-                  disabled={speaking}
+                  className="speak-btn"
+                  onClick={playSentence}
                   title="朗读整句"
                 >
-                  {speaking ? '🔊 播放中' : '🔈 朗读'}
+                  🔈 朗读
                 </button>
                 {/* 收藏整句 */}
                 <button
