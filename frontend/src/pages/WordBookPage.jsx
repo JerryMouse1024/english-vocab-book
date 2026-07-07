@@ -45,8 +45,8 @@ export default function WordBookPage() {
           )
         : sentences;
 
-      setWordTotal(wordRes.data.total || 0);
-      setSentenceTotal(sentRes.data.items?.length || 0);
+      setWordTotal(filteredWords.length);
+      setSentenceTotal(filteredSentences.length);
       // 按收藏时间降序排列（最新在前），单词和句子混排
       const merged = [...filteredWords, ...filteredSentences];
       merged.sort((a, b) => new Date(b.collected_at) - new Date(a.collected_at));
