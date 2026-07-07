@@ -19,6 +19,7 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   // 句子相关状态
   const [sentenceCollected, setSentenceCollected] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   // 音频播放 ref
   const audioRef = useRef(null);
 
@@ -30,6 +31,7 @@ export default function HomePage() {
     setResults(null);
     setSentenceResult(null);
     setSentenceCollected(false);
+    setIsSpeaking(false);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -98,15 +100,16 @@ export default function HomePage() {
 
   // 整句朗读（通过在线 TTS 音频流）
   const playSentence = () => {
-    if (!sentenceResult) return;
-    if (audioRef.current) {
-      // 停止当前正在播放的
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      // 设置新的音频源并播放
-      audioRef.current.src = getSentenceAudioUrl(sentenceResult.original);
-      audioRef.current.play().catch(() => {});
-    }
+    if (!sentenceResult || !audioRef.current) return;
+    // 停止当前正在播放的
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    // 设置新的音频源并播放
+    audioRef.current.src = getSentenceAudioUrl(sentenceResult.original);
+    audioRef.current.onended = () => setIsSpeaking(false);
+    audioRef.current.onerror = () => setIsSpeaking(false);
+    setIsSpeaking(true);
+    audioRef.current.play().catch(() => setIsSpeaking(false));
   };
 
   return (
@@ -158,11 +161,11 @@ export default function HomePage() {
                 {/* 整句朗读 —— 用 <audio> 播放 TTS 音频流 */}
                 <audio ref={audioRef} preload="none" style={{ display: 'none' }} />
                 <button
-                  className="speak-btn"
+                  className={`speak-btn ${isSpeaking ? 'speaking' : ''}`}
                   onClick={playSentence}
                   title="朗读整句"
                 >
-                  🔈 朗读
+                  {isSpeaking ? '🔊' : '🔈'} 朗读
                 </button>
                 {/* 收藏整句 */}
                 <button
