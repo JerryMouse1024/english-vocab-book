@@ -18,6 +18,12 @@
 .search-input-wrap {
   position: relative;
   flex: 1;
+  display: flex;
+}
+
+/* 搜索框填满包裹层 */
+.search-input-wrap .search-input {
+  width: 100%;
 }
 
 .search-clear-btn {
