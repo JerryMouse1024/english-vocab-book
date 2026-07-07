@@ -404,3 +404,89 @@
     display: none; /* 手机端隐藏标签，节省空间 */
   }
 }
+
+/* ===== 删除确认弹窗 ===== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.confirm-dialog {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+  animation: confirmSlideUp 0.2s ease-out;
+}
+
+@keyframes confirmSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.confirm-text {
+  font-size: 16px;
+  color: #1e293b;
+  line-height: 1.6;
+  margin: 0 0 6px;
+}
+
+.confirm-text strong {
+  color: #0f172a;
+}
+
+.confirm-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 24px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.confirm-cancel,
+.confirm-delete {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.confirm-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+}
+
+.confirm-cancel:hover {
+  background: #e2e8f0;
+}
+
+.confirm-delete {
+  background: var(--danger, #ef4444);
+  color: #fff;
+  border: none;
+}
+
+.confirm-delete:hover {
+  background: #dc2626;
+}

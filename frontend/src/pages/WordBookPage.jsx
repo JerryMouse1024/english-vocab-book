@@ -25,6 +25,8 @@ export default function WordBookPage() {
   // 编辑翻译
   const [editingTrans, setEditingTrans] = useState(false);
   const [editTransValue, setEditTransValue] = useState('');
+  // 删除确认
+  const [confirmItem, setConfirmItem] = useState(null);
 
   const fetchAll = async (overrideSearch) => {
     setLoading(true);
@@ -71,8 +73,10 @@ export default function WordBookPage() {
     fetchAll();
   };
 
-  const handleDelete = async (item) => {
-    if (!confirm(item.kind === 'word' ? '确定要删除这个单词吗？' : '确定要删除这个句子吗？')) return;
+  const handleDelete = async () => {
+    if (!confirmItem) return;
+    const item = confirmItem;
+    setConfirmItem(null);
     try {
       if (item.kind === 'word') await deleteCollection(item.id);
       else await deleteSentence(item.id);
@@ -230,9 +234,9 @@ export default function WordBookPage() {
                 <div className="drawer-footer">
                   <button
                     className="drawer-delete-btn"
-                    onClick={() => handleDelete(drawerItem)}
+                    onClick={() => setConfirmItem(drawerItem)}
                   >
-                    删除此单词
+                    删除
                   </button>
                 </div>
               </>
@@ -284,15 +288,31 @@ export default function WordBookPage() {
                   )}
                   <button
                     className="drawer-delete-btn"
-                    onClick={() => handleDelete(drawerItem)}
+                    onClick={() => setConfirmItem(drawerItem)}
                   >
-                    删除此句子
+                    删除
                   </button>
                 </div>
               </>
             )}
           </aside>
         </>
+      )}
+
+      {/* ===== 删除确认弹窗 ===== */}
+      {confirmItem && (
+        <div className="confirm-overlay" onClick={() => setConfirmItem(null)}>
+          <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-text">
+              确定要删除 <strong>「{confirmItem.kind === 'word' ? confirmItem.word : confirmItem.original}」</strong> 吗？
+            </p>
+            <p className="confirm-hint">删除后不可恢复</p>
+            <div className="confirm-actions">
+              <button className="confirm-cancel" onClick={() => setConfirmItem(null)}>取消</button>
+              <button className="confirm-delete" onClick={handleDelete}>确认删除</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
