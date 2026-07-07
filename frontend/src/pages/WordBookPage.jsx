@@ -241,20 +241,7 @@ export default function WordBookPage() {
                 {/* 句子详情 */}
                 <h2 className="drawer-title">{drawerItem.original}</h2>
                 <div className="drawer-section">
-                  <div className="drawer-section-header">
-                    <h3>翻译</h3>
-                    {!editingTrans && (
-                      <button
-                        className="drawer-edit-btn"
-                        onClick={() => {
-                          setEditTransValue(drawerItem.translation || '');
-                          setEditingTrans(true);
-                        }}
-                      >
-                        编辑
-                      </button>
-                    )}
-                  </div>
+                  <h3>翻译</h3>
                   {editingTrans ? (
                     <div className="drawer-edit-row">
                       <textarea
@@ -284,6 +271,17 @@ export default function WordBookPage() {
                   <span>收藏时间: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
                 </div>
                 <div className="drawer-footer">
+                  {!editingTrans && (
+                    <button
+                      className="drawer-edit-btn"
+                      onClick={() => {
+                        setEditTransValue(drawerItem.translation || '');
+                        setEditingTrans(true);
+                      }}
+                    >
+                      编辑翻译
+                    </button>
+                  )}
                   <button
                     className="drawer-delete-btn"
                     onClick={() => handleDelete(drawerItem)}
