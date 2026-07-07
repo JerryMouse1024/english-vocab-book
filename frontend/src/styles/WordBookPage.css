@@ -251,7 +251,7 @@
 
 /* 翻译编辑 */
 .drawer-edit-btn {
-  width: 100%;
+  flex: 1;
   padding: 10px;
   background: var(--success, #10b981);
   color: #fff;
@@ -261,7 +261,6 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
-  margin-bottom: 8px;
 }
 
 .drawer-edit-btn:hover {
@@ -344,10 +343,12 @@
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid #f1f5f9;
+  display: flex;
+  gap: 10px;
 }
 
 .drawer-delete-btn {
-  width: 100%;
+  flex: 1;
   padding: 10px;
   background: #fff;
   color: var(--danger, #ef4444);
