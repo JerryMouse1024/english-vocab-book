@@ -21,7 +21,7 @@
 
 ## 快速启动
 
-> 本项目前后端整合在**同一端口 8000**：后端会自动托管前端页面，无需单独启动前端。
+> 本项目前后端整合在**同一端口 8000**：后端会自动托管前端页面，**无需单独启动前端**。
 
 ### 方式一：一键启动（Windows 推荐）
 
@@ -31,9 +31,11 @@
 start.cmd
 ```
 
+`start.cmd` 会先检查前端是否已构建（`frontend/dist/` 是否存在），没有就自动 `npm install` + `npm run build`，然后启动后端。
+
 ### 方式二：手动启动
 
-**第一步：安装依赖（只需执行一次）**
+**第一步：安装 Python 依赖（只需执行一次）**
 
 ```bash
 cd backend
@@ -43,14 +45,24 @@ pip install -r requirements.txt
 > - Linux 若提示环境受限，可加 `--break-system-packages`；Windows 不需要该参数。
 > - 启动项目本身**不需要**重复安装依赖，只有首次或依赖缺失时才装。
 
-**第二步：启动**
+**第二步：构建前端（只需在首次或前端代码改动后执行）**
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+> `frontend/dist/` 不纳入 git 版本管理，从仓库拉取后本地没有该目录，必须构建一次才能访问网页。
+
+**第三步：启动**
 
 ```bash
 cd backend
 python run.py
 ```
 
-后端运行在 http://localhost:8000 ，浏览器直接访问该地址即可使用。
+后端运行在 http://localhost:8000 ，浏览器直接访问该地址即可使用（后端同时提供 API 与前端页面）。
 
 ### Windows 终端中文乱码解决办法
 
