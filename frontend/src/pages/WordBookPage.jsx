@@ -90,6 +90,23 @@ export default function WordBookPage() {
     setDrawerItem(item);
   };
 
+  /** 熟练度标签文字 */
+  const getBadgeLabel = (item) => {
+    if (item.mastered) return '已掌握';
+    const stage = item.review_stage ?? 0;
+    return STAGE_LABELS[stage] ?? `阶段${stage}`;
+  };
+
+  /** 熟练度标签样式类 */
+  const getBadgeClass = (item) => {
+    if (item.mastered) return 'badge-mastered';
+    const stage = item.review_stage ?? 0;
+    if (stage === 0) return 'badge-new';
+    if (stage <= 2) return 'badge-learning';
+    if (stage <= 4) return 'badge-progress';
+    return 'badge-solid';
+  };
+
   return (
     <div className="wordbook-page">
       <h1>我的收藏本</h1>
@@ -140,7 +157,9 @@ export default function WordBookPage() {
             <span className="row-text" title={item.kind === 'word' ? item.word : item.original}>
               {item.kind === 'word' ? item.word : item.original}
             </span>
-            <span className="row-date">{new Date(item.collected_at).toLocaleDateString('zh-CN')}</span>
+            <span className={`row-badge ${item.kind === 'word' ? getBadgeClass(item) : 'badge-sentence'}`}>
+              {item.kind === 'word' ? getBadgeLabel(item) : '句子'}
+            </span>
           </div>
         ))}
       </div>
