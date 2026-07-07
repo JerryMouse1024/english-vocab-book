@@ -20,7 +20,6 @@ export default function WordBookPage() {
   const [sentenceTotal, setSentenceTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -146,10 +145,7 @@ export default function WordBookPage() {
             </div>
           ) : (
             <div key={`s-${item.id}`} className="sentence-list-item">
-              <div
-                className="sentence-list-header"
-                onClick={() => setExpandedId(expandedId === `s-${item.id}` ? null : `s-${item.id}`)}
-              >
+              <div className="word-list-header">
                 <div className="sentence-list-main">
                   <span className="kind-badge sentence">句子</span>
                   <span className="sentence-text">{item.original}</span>
@@ -157,37 +153,19 @@ export default function WordBookPage() {
                     <span className="sentence-translation">{item.translation}</span>
                   )}
                 </div>
-                <div className="word-list-actions">
-                  <span className="word-summary">
-                    {new Date(item.collected_at).toLocaleDateString('zh-CN')}
-                  </span>
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-                  >
-                    删除
-                  </button>
-                </div>
+                <button
+                  className="delete-btn"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+                >
+                  删除
+                </button>
               </div>
-              {expandedId === `s-${item.id}` && item.words_json && (
-                <div className="sentence-list-detail">
-                  {(() => {
-                    try {
-                      const words = JSON.parse(item.words_json);
-                      return words.map((w, i) => (
-                        <div key={i} className="sentence-word-item">
-                          <strong>{w.word}</strong>
-                          {w.definitions && w.definitions.length > 0 && (
-                            <span> — {w.definitions[0].meaning}</span>
-                          )}
-                        </div>
-                      ));
-                    } catch {
-                      return <p>逐词解析解析失败</p>;
-                    }
-                  })()}
-                </div>
-              )}
+              <div className="word-list-body">
+                <p className="word-definition">{item.translation || '（无翻译）'}</p>
+                <p className="word-meta">
+                  收藏时间: {new Date(item.collected_at).toLocaleDateString('zh-CN')}
+                </p>
+              </div>
             </div>
           )
         )}
