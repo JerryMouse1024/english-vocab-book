@@ -163,6 +163,8 @@ def get_word_list(db: Session, q: str | None = None, page: int = 1, size: int = 
             "phonetics_us": word.phonetics_us,
             "definitions_summary": summary,
             "definitions": full_definitions,
+            "definitions_parsed": defs,
+            "examples": json.loads(word.examples) if word.examples else None,
             "review_stage": coll.review_stage,
             "review_count": coll.review_count,
             "next_review": coll.next_review,

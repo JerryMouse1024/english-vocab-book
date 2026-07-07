@@ -36,7 +36,11 @@ class WordListItem(BaseModel):
     phonetics_uk: Optional[str] = None
     phonetics_us: Optional[str] = None
     definitions_summary: str
+    definitions: str = ""
+    definitions_parsed: List[dict] = []
+    examples: Optional[List[dict]] = None
     review_stage: int
+    review_count: int = 0
     next_review: datetime
     mastered: bool
     collected_at: datetime
@@ -103,7 +107,11 @@ class SentenceListItem(BaseModel):
     original: str
     translation: Optional[str] = None
     words_json: Optional[str] = None
-    collected_at: datetime
+    review_stage: int = 0
+    review_count: int = 0
+    next_review: Optional[datetime] = None
+    mastered: bool = False
+    collected_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

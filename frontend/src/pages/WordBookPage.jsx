@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence, updateWordDefs } from '../api';
 import { Link } from 'react-router-dom';
+import WordCard from '../components/WordCard';
 import '../styles/WordBookPage.css';
 
 const STAGE_LABELS = {
@@ -234,7 +235,7 @@ export default function WordBookPage() {
                   </div>
                 )}
                 <div className="drawer-section">
-                  <h3>释义</h3>
+                  <h3>释义 & 例句</h3>
                   {editing ? (
                     <div className="drawer-edit-row">
                       <textarea
@@ -257,7 +258,14 @@ export default function WordBookPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="drawer-def">{drawerItem.definitions || drawerItem.definitions_summary}</p>
+                    <WordCard
+                      wordData={{
+                        word: drawerItem.word,
+                        definitions: drawerItem.definitions_parsed || [],
+                        examples: drawerItem.examples,
+                      }}
+                      compact
+                    />
                   )}
                 </div>
                 <div className="drawer-meta">
