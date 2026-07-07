@@ -209,6 +209,31 @@
   color: #94a3b8;
 }
 
+/* 抽屉底部操作区 */
+.drawer-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.drawer-delete-btn {
+  width: 100%;
+  padding: 10px;
+  background: #fff;
+  color: var(--danger, #ef4444);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.drawer-delete-btn:hover {
+  background: #fef2f2;
+  border-color: var(--danger, #ef4444);
+}
+
 /* ===== 空状态 & 链接 ===== */
 .empty-state {
   text-align: center;

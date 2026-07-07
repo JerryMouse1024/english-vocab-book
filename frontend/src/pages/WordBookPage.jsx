@@ -125,13 +125,6 @@ export default function WordBookPage() {
               {item.kind === 'word' ? item.word : item.original}
             </span>
             <span className="row-date">{new Date(item.collected_at).toLocaleDateString('zh-CN')}</span>
-            <button
-              className="delete-btn"
-              onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
-              title="删除"
-            >
-              ✕
-            </button>
           </div>
         ))}
       </div>
@@ -174,6 +167,14 @@ export default function WordBookPage() {
                   <span>复习: {drawerItem.review_count ?? 0} 次</span>
                   <span>收藏: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
                 </div>
+                <div className="drawer-footer">
+                  <button
+                    className="drawer-delete-btn"
+                    onClick={() => handleDelete(drawerItem)}
+                  >
+                    删除此单词
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -185,6 +186,14 @@ export default function WordBookPage() {
                 </div>
                 <div className="drawer-meta">
                   <span>收藏时间: {new Date(drawerItem.collected_at).toLocaleDateString('zh-CN')}</span>
+                </div>
+                <div className="drawer-footer">
+                  <button
+                    className="drawer-delete-btn"
+                    onClick={() => handleDelete(drawerItem)}
+                  >
+                    删除此句子
+                  </button>
                 </div>
               </>
             )}
