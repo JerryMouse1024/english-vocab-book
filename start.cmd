@@ -6,8 +6,8 @@ set PYTHONUTF8=1
 :: 从 https://ai.youdao.com 注册获取
 ::   set YOUDAO_APP_KEY=你的应用ID
 ::   set YOUDAO_APP_SECRET=你的应用密钥
-set YOUDAO_APP_KEY=
-set YOUDAO_APP_SECRET=
+set YOUDAO_APP_KEY=456e46676a7cd30f
+set YOUDAO_APP_SECRET=vRkQwMy3OslxOpu6lngcODjZ6CoFdM9z
 
 :: 始终保持前端依赖最新
 cd /d %~dp0frontend
