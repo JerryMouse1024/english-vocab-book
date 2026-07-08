@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence, updateWordDefs } from '../api';
+import { useState, useEffect, useRef } from 'react';
+import { getWordList, deleteCollection, getSentences, deleteSentence, updateSentence, updateWordDefs, getSentenceAudioUrl } from '../api';
 import { Link } from 'react-router-dom';
 import WordCard from '../components/WordCard';
 import PhoneticPlayer from '../components/PhoneticPlayer';
@@ -29,6 +29,56 @@ export default function WordBookPage() {
   const [editValue, setEditValue] = useState('');
   // 删除确认
   const [confirmItem, setConfirmItem] = useState(null);
+  // 句子朗读状态
+  const sentenceAudioRef = useRef(null);
+  const [sentenceSpeaking, setSentenceSpeaking] = useState(null); // null | 'youdao' | 'edge'
+  // 音标冒泡：点击句子标题时显示，再次点击或点其他地方关闭
+  const [phoneticTipId, setPhoneticTipId] = useState(null);
+
+  /** 解析句子中的单词音标 */
+  const parsePhonetics = (item) => {
+    if (!item.words_json) return null;
+    try {
+      const words = JSON.parse(item.words_json);
+      if (!Array.isArray(words)) return null;
+      // 过滤有音标的单词
+      return words.filter((w) => w.phonetics_uk || w.phonetics_us || w.phonetics);
+    } catch {
+      return null;
+    }
+  };
+
+  /** 浏览器 SpeechSynthesis 降级 */
+  const speakWithBrowser = (text) => {
+    if (!window.speechSynthesis) { setSentenceSpeaking(null); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.9;
+    utter.onend = () => setSentenceSpeaking(null);
+    utter.onerror = () => setSentenceSpeaking(null);
+    window.speechSynthesis.speak(utter);
+  };
+
+  /** 句子朗读（指定服务商） */
+  const playSentenceTts = (source) => {
+    if (!drawerItem || drawerItem.kind !== 'sentence') return;
+    if (!sentenceAudioRef.current) { speakWithBrowser(drawerItem.original); return; }
+
+    // 停止当前
+    if (sentenceAudioRef.current) {
+      sentenceAudioRef.current.pause();
+      sentenceAudioRef.current.currentTime = 0;
+    }
+    window.speechSynthesis?.cancel();
+    setSentenceSpeaking(source);
+
+    const text = drawerItem.original;
+    sentenceAudioRef.current.src = getSentenceAudioUrl(text, 'en-US', source);
+    sentenceAudioRef.current.onended = () => setSentenceSpeaking(null);
+    sentenceAudioRef.current.onerror = () => speakWithBrowser(text);
+    sentenceAudioRef.current.play().catch(() => speakWithBrowser(text));
+  };
 
   const fetchAll = async (overrideSearch) => {
     setLoading(true);
@@ -99,6 +149,12 @@ export default function WordBookPage() {
     setDrawerItem(item);
     setEditing(false);
     setEditValue('');
+    setSentenceSpeaking(null);
+    setPhoneticTipId(null);
+    if (sentenceAudioRef.current) {
+      sentenceAudioRef.current.pause();
+      sentenceAudioRef.current.currentTime = 0;
+    }
   };
 
   /** 保存编辑后的翻译/释义 */
@@ -152,73 +208,79 @@ export default function WordBookPage() {
 
   return (
     <div className="wordbook-page">
-      <h1>我的收藏本</h1>
-      <p className="wordbook-sub">已收藏的单词与句子都在这里</p>
+      {/* ===== 左栏：搜索 + 列表 ===== */}
+      <div className="wordbook-left">
+      <div className="wordbook-header">
+        <h1>我的收藏本</h1>
+        <p className="wordbook-sub">已收藏的单词与句子都在这里</p>
 
-      <div className="wordbook-search">
-        <div className="search-input-wrap">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="搜索已收藏的单词或句子..."
-            className="search-input"
-          />
-          {search && (
-            <button
-              className="search-clear-btn"
-              onClick={() => { setSearch(''); fetchAll(''); }}
-              title="清空搜索"
-              type="button"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <button onClick={handleSearch} className="search-btn">搜索</button>
-      </div>
-
-      <div className="wordbook-stats">
-        共 {wordTotal} 个单词 · {sentenceTotal} 个句子
-        <Link to="/review" className="review-link">
-          {dueCount > 0 ? `📝 今日有 ${dueCount} 项待复习` : '📝 去复习'}
-        </Link>
-      </div>
-
-      {loading && <div className="loading">加载中...</div>}
-
-      {/* ===== 列表区（每行一项，只显示英文）===== */}
-      <div className={`collection-list ${drawerItem ? 'drawer-open' : ''}`}>
-        {items.map((item, idx) => (
-          <div
-            key={`${item.kind}-${item.id}`}
-            className={`collection-row ${drawerItem?.id === item.id ? 'active' : ''}`}
-            onDoubleClick={(e) => openDrawer(e, item)}
-          >
-            <span className="row-index">{String(idx + 1).padStart(2, '0')}</span>
-            <span className="row-text" title={item.kind === 'word' ? item.word : item.original}>
-              {item.kind === 'word' ? item.word : item.original}
-            </span>
-            <span className={`row-badge ${getBadgeClass(item)}`}>
-              {getBadgeLabel(item)}
-            </span>
+        <div className="wordbook-search">
+          <div className="search-input-wrap">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="搜索已收藏的单词或句子..."
+              className="search-input"
+            />
+            {search && (
+              <button
+                className="search-clear-btn"
+                onClick={() => { setSearch(''); fetchAll(''); }}
+                title="清空搜索"
+                type="button"
+              >
+                ✕
+              </button>
+            )}
           </div>
-        ))}
+          <button onClick={handleSearch} className="search-btn">搜索</button>
+        </div>
+
+        <div className="wordbook-stats">
+          共 {wordTotal} 个单词 · {sentenceTotal} 个句子
+          <Link to="/review" className="review-link">
+            {dueCount > 0 ? `📝 今日有 ${dueCount} 项待复习` : '📝 去复习'}
+          </Link>
+        </div>
+
       </div>
 
-      {!loading && items.length === 0 && (
-        <div className="empty-state">
-          <p>还没有收藏任何单词或句子</p>
-          <Link to="/" className="go-search">去查词</Link>
+      {/* ===== 列表区（左栏下半部分，内部滚动）===== */}
+      <div className="collection-list">
+        {loading && <div className="loading">加载中...</div>}
+          {items.map((item, idx) => (
+            <div
+              key={`${item.kind}-${item.id}`}
+              className={`collection-row ${drawerItem?.kind === item.kind && drawerItem?.id === item.id ? 'active' : ''}`}
+              onClick={(e) => openDrawer(e, item)}
+            >
+              <span className="row-index">{String(idx + 1).padStart(2, '0')}</span>
+              <span className="row-text" title={item.kind === 'word' ? item.word : item.original}>
+                {item.kind === 'word' ? item.word : item.original}
+              </span>
+              {item.kind === 'word' && item.phonetics_uk && (
+                <span className="row-phonetic">/{item.phonetics_uk}/</span>
+              )}
+              <span className={`row-badge ${getBadgeClass(item)}`}>
+                {getBadgeLabel(item)}
+              </span>
+            </div>
+          ))}
+        {!loading && items.length === 0 && (
+          <div className="empty-state">
+            <p>还没有收藏任何单词或句子</p>
+            <Link to="/" className="go-search">去查词</Link>
+          </div>
+        )}
         </div>
-      )}
+      </div>
 
-      {/* ===== 右侧抽屉（双击展开详情）===== */}
-      {drawerItem && (
-        <>
-          <div className="drawer-overlay" onClick={() => setDrawerItem(null)} />
-          <aside className="detail-drawer">
+      {/* ===== 中栏：抽屉（始终占位）===== */}
+      <aside className="detail-drawer">
+        {drawerItem ? (
+          <>
             <button className="drawer-close" onClick={() => setDrawerItem(null)}>✕</button>
 
             {drawerItem.kind === 'word' ? (
@@ -296,7 +358,51 @@ export default function WordBookPage() {
             ) : (
               <>
                 {/* 句子详情 */}
-                <h2 className="drawer-title">{drawerItem.original}</h2>
+                {/* 隐藏 audio 元素 */}
+                <audio ref={sentenceAudioRef} preload="none" style={{ display: 'none' }} />
+
+                <h2
+                  className="drawer-title drawer-sentence-title"
+                  onClick={() => setPhoneticTipId(phoneticTipId === drawerItem.id ? null : drawerItem.id)}
+                  title="点击显示音标"
+                >
+                  {drawerItem.original}
+                  {phoneticTipId === drawerItem.id && (() => {
+                    const phonetics = parsePhonetics(drawerItem);
+                    return phonetics && phonetics.length > 0 ? (
+                      <div className="phonetic-bubble">
+                        {phonetics.map((w, i) => (
+                          <span key={i} className="phonetic-bubble-item">
+                            <strong>{w.word}</strong>
+                            {w.phonetics_uk && <span className="ph-uk">英 /{w.phonetics_uk}/</span>}
+                            {w.phonetics_us && <span className="ph-us">美 /{w.phonetics_us}/</span>}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="phonetic-bubble phonetic-empty">暂无音标数据</div>
+                    );
+                  })()}
+                </h2>
+
+                {/* 朗读按钮组 */}
+                <div className="sentence-drawer-actions">
+                  <button
+                    className={`speak-btn youdao ${sentenceSpeaking === 'youdao' ? 'speaking' : ''}`}
+                    onClick={() => playSentenceTts('youdao')}
+                    title="有道朗读"
+                  >
+                    {sentenceSpeaking === 'youdao' ? '🔊' : '🔈'} 有道
+                  </button>
+                  <button
+                    className={`speak-btn edge ${sentenceSpeaking === 'edge' ? 'speaking' : ''}`}
+                    onClick={() => playSentenceTts('edge')}
+                    title="Edge TTS 朗读（神经网络语音）"
+                  >
+                    {sentenceSpeaking === 'edge' ? '🔊' : '🔈'} Edge
+                  </button>
+                </div>
+
                 <div className="drawer-section">
                   <h3>翻译</h3>
                   {editing ? (
@@ -348,9 +454,17 @@ export default function WordBookPage() {
                 </div>
               </>
             )}
-          </aside>
-        </>
-      )}
+          </>
+        ) : (
+          <div className="drawer-empty">
+            <div className="drawer-empty-icon">📖</div>
+            <p>单击左侧条目查看详情</p>
+          </div>
+        )}
+      </aside>
+
+      {/* ===== 右栏：留白 ===== */}
+      <div className="wordbook-spacer"></div>
 
       {/* ===== 删除确认弹窗 ===== */}
       {confirmItem && (

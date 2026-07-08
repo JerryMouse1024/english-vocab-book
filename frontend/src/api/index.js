@@ -51,8 +51,8 @@ export const updateWordDefs = (wordId, definitions) =>
 export const getAudioUrl = (word, accent = 'us') =>
   `/api/word/${encodeURIComponent(word)}/audio/${accent}`;
 
-// 整句朗读 TTS 音频URL（在线TTS，返回MP3流）
-export const getSentenceAudioUrl = (text, lang = 'en-US') =>
-  `/api/tts?${new URLSearchParams({ text, lang })}`;
+// 整句朗读 TTS 音频URL（可指定 source: youdao | edge | google | auto）
+export const getSentenceAudioUrl = (text, lang = 'en-US', source = 'auto') =>
+  `/api/tts?${new URLSearchParams({ text, lang, source })}`;
 
 export default api;

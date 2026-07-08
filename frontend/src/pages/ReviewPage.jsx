@@ -70,7 +70,7 @@ export default function ReviewPage() {
         }
         // currentIndex 不变，下一项自动滑入
       } else {
-        // 忘记：更新阶段信息，排到队尾
+        // 忘记：更新阶段信息，排到第 2 个单词之后（跳过 2 个才再次出现）
         const updatedTask = {
           ...task,
           stage: res.data.new_stage,
@@ -78,7 +78,9 @@ export default function ReviewPage() {
         };
         const newTasks = [...tasks];
         newTasks.splice(currentIndex, 1);
-        newTasks.push(updatedTask);
+        // 插入到索引 2 的位置（前面保留 2 个单词），队列不足则排到队尾
+        const insertIndex = Math.min(2, newTasks.length);
+        newTasks.splice(insertIndex, 0, updatedTask);
         setTasks(newTasks);
 
         if (currentIndex >= newTasks.length) {

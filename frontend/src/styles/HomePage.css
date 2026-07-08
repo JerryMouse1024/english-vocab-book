@@ -1,4 +1,8 @@
 .home-page {
+  height: 100%;
+  overflow-y: auto;
+  max-width: 860px;
+  margin: 0 auto;
   padding-top: 16px;
 }
 
@@ -161,6 +165,24 @@
 .speak-btn:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+/* Edge 按钮颜色区分：有道用靛蓝，Edge 用青绿 */
+.speak-btn.edge {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.speak-btn.edge:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.speak-btn.edge.speaking {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
 }
 
 /* 收藏整句按钮 */

@@ -32,21 +32,34 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* ===== App 布局 ===== */
+html {
+  overflow-y: auto;
+}
+
+/* ===== App 布局（固定视口，无浏览器滚动条，左侧导航）===== */
 .app {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .main-content {
   flex: 1;
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 24px 16px 60px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 20px 28px;
+}
+
+/* ===== 全局隐藏滚动条（保留滚轮能力）===== */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* ===== 通用组件 ===== */
@@ -90,6 +103,10 @@ body {
 
 .search-input:focus {
   border-color: var(--primary);
+}
+
+.search-input:focus::placeholder {
+  color: transparent;
 }
 
 .search-btn {

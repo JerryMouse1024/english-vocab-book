@@ -37,11 +37,9 @@ def calculate_next_review(stage: int, result: str) -> tuple:
         next_review = now + timedelta(days=interval)
         return new_stage, next_review, False
     else:
-        # 失败：阶梯回退（不直接归零）
-        #   阶段 0-3 → 回退 1 个阶段
-        #   阶段 4-7 → 回退 2 个阶段
+        # 失败：0~3级不进行任何回退（保持当前阶段）；4~7级回退2级
         if stage <= 3:
-            new_stage = max(0, stage - 1)
+            new_stage = stage
         else:
             new_stage = max(0, stage - 2)
         next_review = now + timedelta(days=1)

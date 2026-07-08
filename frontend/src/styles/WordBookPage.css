@@ -76,16 +76,33 @@
   text-decoration: underline;
 }
 
-/* ===== 列表区 ===== */
-.collection-list {
+.wordbook-page {
   display: flex;
-  flex-direction: column;
-  transition: opacity 0.2s, transform 0.3s ease;
+  height: 100%;
+  overflow: hidden;
 }
 
-.collection-list.drawer-open {
-  opacity: 0.5;
-  pointer-events: none;
+/* ===== 左栏：搜索 + 列表 ===== */
+.wordbook-left {
+  flex-shrink: 0;
+  width: 600px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wordbook-header {
+  flex-shrink: 0;
+}
+
+/* ===== 列表区（左栏下半部分，内部滚动）===== */
+.collection-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .collection-row {
@@ -123,6 +140,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+}
+
+.row-phonetic {
+  flex-shrink: 0;
+  margin-left: 10px;
+  font-size: 13px;
+  color: #94a3b8;
+  font-family: "Lucida Grande", "Segoe UI", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 /* ===== 熟练度标签（替代原来的收藏日期）===== */
@@ -164,32 +190,65 @@
   color: #ef4444;
 }
 
-/* ===== 右侧抽屉 ===== */
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 98;
-  background: transparent;
+/* ===== 中栏：抽屉（卡片样式，始终占位）===== */
+.detail-drawer {
+  flex-shrink: 0;
+  width: 480px;
+  max-width: 45vw;
+  height: calc(100% - 16px);
+  margin: 8px 8px 8px 16px;
+  background: #fff;
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow-lg, 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06));
+  padding: 28px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.detail-drawer {
-  position: fixed;
-  top: 56px; /* 导航栏高度 */
-  right: 0;
-  bottom: 0;
-  z-index: 99;
-  width: 540px;
-  max-width: 85vw;
-  background: #fff;
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.1);
+/* 抽屉空状态提示 */
+.drawer-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.drawer-empty-icon {
+  font-size: 36px;
+  opacity: 0.35;
+}
+
+/* ===== 右栏：留白 ===== */
+.wordbook-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-drawer > * {
+  flex-shrink: 0;
+}
+
+/* 中间内容区（释义/翻译）占据剩余空间，内部可滚动但隐藏滚动条 */
+.detail-drawer .drawer-section {
+  flex: 1 1 0%;
+  min-height: 0;
   overflow-y: auto;
-  padding: 32px 28px;
-  animation: drawerSlideIn 0.25s ease-out;
+  scrollbar-width: none;
+}
+
+.detail-drawer .drawer-section::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes drawerSlideIn {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .drawer-close {
@@ -221,10 +280,138 @@
   word-break: break-word;
 }
 
+/* 句子标题：可点击，显示手型光标 */
+.drawer-sentence-title {
+  position: relative;
+  cursor: pointer;
+  padding-right: 4px;
+}
+
+.drawer-sentence-title:hover::after {
+  content: '🔊';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  opacity: 0.5;
+}
+
 .drawer-phonetic {
   font-size: 15px;
   color: #64748b;
   margin-bottom: 20px;
+}
+
+/* ===== 音标冒泡 ===== */
+.phonetic-bubble {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 13px;
+  animation: bubbleIn 0.2s ease-out;
+  z-index: 5;
+}
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.phonetic-bubble-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.phonetic-bubble-item strong {
+  color: #334155;
+  min-width: 40px;
+}
+
+.ph-uk,
+.ph-us {
+  color: #64748b;
+  white-space: nowrap;
+  font-family: "Lucida Grande", "Segoe UI", sans-serif;
+}
+
+.ph-uk { color: #3b82f6; }
+.ph-us { color: #ef4444; }
+
+.phonetic-empty {
+  color: #94a3b8;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ===== 句子朗读按钮组（收藏本抽屉）===== */
+.sentence-drawer-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sentence-drawer-actions .speak-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 16px;
+  border-radius: 22px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+.sentence-drawer-actions .speak-btn.youdao {
+  background: #eef2ff;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+}
+
+.sentence-drawer-actions .speak-btn.youdao:hover:not(:disabled) {
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+}
+
+.sentence-drawer-actions .speak-btn.youdao.speaking {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.sentence-drawer-actions .speak-btn.edge {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.sentence-drawer-actions .speak-btn.edge:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.sentence-drawer-actions .speak-btn.edge.speaking {
+  background: #059669;
+  color: #fff;
+  border-color: #059669;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.65; }
 }
 
 .drawer-section {
@@ -386,10 +573,27 @@
 
 /* ===== 响应式 ===== */
 @media (max-width: 640px) {
+  .wordbook-page {
+    flex-direction: column;
+  }
+
+  .wordbook-left {
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+  }
+
   .detail-drawer {
     width: 100%;
-    max-width: 100vw;
-    animation-duration: 0.2s;
+    max-width: 100%;
+    height: auto;
+    margin: 8px 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .wordbook-spacer {
+    display: none;
   }
 
   .row-index {
