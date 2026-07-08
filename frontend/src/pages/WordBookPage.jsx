@@ -287,6 +287,12 @@ export default function WordBookPage() {
               <>
                 {/* 单词详情 */}
                 <h2 className="drawer-title">{drawerItem.word}</h2>
+                {drawerItem.syllable && (
+                  <p
+                    className="drawer-syllable"
+                    dangerouslySetInnerHTML={{ __html: drawerItem.syllable_html || drawerItem.syllable }}
+                  />
+                )}
                 {(drawerItem.phonetics_uk || drawerItem.phonetics_us) && (
                   <div className="drawer-phonetic">
                     <PhoneticPlayer

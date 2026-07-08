@@ -14,6 +14,8 @@ class Word(Base):
     phonetics_us = Column(String(255), nullable=True)
     audio_uk_url = Column(Text, nullable=True)
     audio_us_url = Column(Text, nullable=True)
+    syllable = Column(Text, nullable=True)            # 音节划分，如 "com·mu·ni·ca·tion"
+    syllable_html = Column(Text, nullable=True)       # 带重音高亮的 HTML 版本
     exam_tags = Column(Text, nullable=True)          # JSON array
     definitions = Column(Text, nullable=False)        # JSON array
     english_defs = Column(Text, nullable=True)        # JSON array

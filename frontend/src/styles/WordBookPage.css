@@ -276,8 +276,22 @@
   font-size: 26px;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   word-break: break-word;
+}
+
+.drawer-syllable {
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.drawer-syllable .stressed {
+  color: #f59e0b;
+  font-weight: 600;
 }
 
 /* 句子标题：可点击，显示手型光标 */

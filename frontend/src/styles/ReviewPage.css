@@ -62,8 +62,22 @@
   font-size: 42px;
   font-weight: 800;
   color: var(--primary-dark);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   word-break: break-word;
+}
+
+/* 复习页面音节划分 */
+.review-syllable {
+  font-size: 20px;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.review-syllable .stressed {
+  color: #f59e0b;
+  font-weight: 600;
 }
 
 /* 句子复习时标题稍小 */

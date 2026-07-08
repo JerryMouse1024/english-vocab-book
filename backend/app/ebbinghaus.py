@@ -71,6 +71,8 @@ def get_today_review_tasks(db: Session) -> list:
             "word": word.word,
             "phonetics_uk": word.phonetics_uk,
             "phonetics_us": word.phonetics_us,
+            "syllable": word.syllable,
+            "syllable_html": word.syllable_html,
             "audio_uk_url": word.audio_uk_url,
             "audio_us_url": word.audio_us_url,
             "definitions": json.loads(word.definitions) if word.definitions else [],

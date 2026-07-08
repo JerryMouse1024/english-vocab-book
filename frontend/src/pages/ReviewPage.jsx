@@ -162,6 +162,12 @@ export default function ReviewPage() {
           <h2 className={`review-word ${isSentence ? 'sentence-word' : ''}`}>
             {isSentence ? current.original : current.word}
           </h2>
+          {!isSentence && current.syllable && (
+            <p
+              className="review-syllable"
+              dangerouslySetInnerHTML={{ __html: current.syllable_html || current.syllable }}
+            />
+          )}
           {!isSentence && (
             <PhoneticPlayer
               word={current.word}

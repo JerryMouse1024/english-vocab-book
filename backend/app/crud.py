@@ -6,6 +6,7 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 from app.models import Word, Collection, ReviewRecord, SentenceCollection, SentenceReviewRecord
+from app.syllable import get_syllable_info
 
 
 def normalize_word_key(word: str) -> str:
@@ -39,12 +40,24 @@ def update_word_definitions(db: Session, word_id: int, definitions: str) -> Word
 
 def _build_word_entry(entry: dict) -> Word:
     """根据 UAPI entry 构造 Word 对象（不含入库动作）"""
+    word_text = (entry.get("word") or "").strip().lower()
+    # 提取 IPA 音标用于重音检测（优先英音）
+    phonetics = entry.get("phonetics", {}) or {}
+    ipa_uk = (phonetics.get("uk", {}) or {}).get("text")
+    ipa_us = (phonetics.get("us", {}) or {}).get("text")
+    ipa = ipa_uk or ipa_us  # 有英音用英音，否则美音
+
+    # 生成音节数据（含重音高亮 HTML）
+    syl_info = get_syllable_info(word_text, ipa) if word_text else None
+
     return Word(
-        word=(entry.get("word") or "").strip().lower(),
-        phonetics_uk=(entry.get("phonetics", {}) or {}).get("uk", {}).get("text") if entry.get("phonetics") else None,
-        phonetics_us=(entry.get("phonetics", {}) or {}).get("us", {}).get("text") if entry.get("phonetics") else None,
-        audio_uk_url=(entry.get("phonetics", {}) or {}).get("uk", {}).get("audio") if entry.get("phonetics") else None,
-        audio_us_url=(entry.get("phonetics", {}) or {}).get("us", {}).get("audio") if entry.get("phonetics") else None,
+        word=word_text,
+        phonetics_uk=ipa_uk,
+        phonetics_us=ipa_us,
+        audio_uk_url=(phonetics.get("uk", {}) or {}).get("audio"),
+        audio_us_url=(phonetics.get("us", {}) or {}).get("audio"),
+        syllable=syl_info["syllable"] if syl_info else None,
+        syllable_html=syl_info["syllable_html"] if syl_info else None,
         exam_tags=json.dumps(entry.get("exam_tags", []), ensure_ascii=False) if entry.get("exam_tags") else None,
         definitions=json.dumps(entry.get("definitions", []), ensure_ascii=False),
         english_defs=json.dumps(entry.get("english_definitions", []), ensure_ascii=False) if entry.get("english_definitions") else None,
@@ -95,6 +108,8 @@ def word_to_response(word: Word, is_collected: bool = False) -> dict:
         "phonetics_us": word.phonetics_us,
         "audio_uk_url": word.audio_uk_url,
         "audio_us_url": word.audio_us_url,
+        "syllable": word.syllable,
+        "syllable_html": word.syllable_html,
         "exam_tags": json.loads(word.exam_tags) if word.exam_tags else None,
         "definitions": json.loads(word.definitions) if word.definitions else [],
         "english_defs": json.loads(word.english_defs) if word.english_defs else None,
@@ -161,6 +176,8 @@ def get_word_list(db: Session, q: str | None = None, page: int = 1, size: int = 
             "word": word.word,
             "phonetics_uk": word.phonetics_uk,
             "phonetics_us": word.phonetics_us,
+            "syllable": word.syllable,
+            "syllable_html": word.syllable_html,
             "definitions_summary": summary,
             "definitions": full_definitions,
             "definitions_parsed": defs,

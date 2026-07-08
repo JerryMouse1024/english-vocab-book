@@ -14,6 +14,8 @@ export default function WordCard({
     word,
     phonetics_uk,
     phonetics_us,
+    syllable,
+    syllable_html,
     exam_tags,
     definitions,
     english_defs,
@@ -28,7 +30,15 @@ export default function WordCard({
     <div className={`word-card ${compact ? 'compact' : ''}`}>
       {!compact && (
       <div className="word-card-header">
-        <h2 className="word-title">{word}</h2>
+        <div className="word-title-group">
+          <h2 className="word-title">{word}</h2>
+          {(syllable_html || syllable) && (
+            <p
+              className="word-syllable"
+              dangerouslySetInnerHTML={{ __html: syllable_html || syllable }}
+            />
+          )}
+        </div>
         <PhoneticPlayer
           word={word}
           phoneticsUk={phonetics_uk}

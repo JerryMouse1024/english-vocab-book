@@ -11,6 +11,8 @@ class WordLookupResponse(BaseModel):
     phonetics_us: Optional[str] = None
     audio_uk_url: Optional[str] = None
     audio_us_url: Optional[str] = None
+    syllable: Optional[str] = None
+    syllable_html: Optional[str] = None
     exam_tags: Optional[List[str]] = None
     definitions: List[dict] = []
     english_defs: Optional[List[dict]] = None
@@ -35,6 +37,8 @@ class WordListItem(BaseModel):
     word: str
     phonetics_uk: Optional[str] = None
     phonetics_us: Optional[str] = None
+    syllable: Optional[str] = None
+    syllable_html: Optional[str] = None
     definitions_summary: str
     definitions: str = ""
     definitions_parsed: List[dict] = []
@@ -61,6 +65,8 @@ class ReviewTaskItem(BaseModel):
     word: str
     phonetics_uk: Optional[str] = None
     phonetics_us: Optional[str] = None
+    syllable: Optional[str] = None
+    syllable_html: Optional[str] = None
     audio_uk_url: Optional[str] = None
     audio_us_url: Optional[str] = None
     definitions: List[dict] = []
