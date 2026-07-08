@@ -1,40 +1,78 @@
-"""免费翻译封装：MyMemory（英文 -> 中文，无需密钥）
+"""免费翻译封装：有道翻译（主）-> MyMemory（备）
 
 说明：
-- MyMemory 公共接口免费、无需 API Key，适合个人使用，但有每日额度（约 5000 词/天）。
-- 仅用于句子/短语的整句翻译；单词释义仍由词典接口（UAPI）提供。
-- 任何异常（网络/额度用尽）都返回 None，由调用方决定是否降级展示。
+- 有道翻译网页接口，免费无需 API Key，翻译质量好
+- MyMemory 公共接口作为备选降级（每日约 5000 词/天额度）
+- 任何异常都返回 None，由调用方决定是否降级展示
 """
 import httpx
 
+YOUDAO_URL = "https://fanyi.youdao.com/translate"
 MYMEMORY_URL = "https://api.mymemory.translated.net/get"
-# 控制超时，避免翻译服务不可达时拖垮整句查询
 TIMEOUT = 8.0
 
 
+async def _youdao_translate(text: str, client: httpx.AsyncClient) -> str | None:
+    """有道翻译：POST 表单请求，返回 JSON"""
+    try:
+        resp = await client.post(
+            YOUDAO_URL,
+            data={"i": text, "doctype": "json", "type": "AUTO"},
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Referer": "https://fanyi.youdao.com/",
+            },
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        if data.get("errorCode") != 0:
+            return None
+        result = data.get("translateResult", [])
+        if not result or not result[0]:
+            return None
+        # 合并多个翻译片段
+        return "".join(seg.get("tgt", "") for seg in result[0])
+    except Exception:
+        return None
+
+
+async def _mymemory_translate(text: str, client: httpx.AsyncClient) -> str | None:
+    """MyMemory 翻译（备选降级）"""
+    try:
+        resp = await client.get(
+            MYMEMORY_URL,
+            params={"q": text, "langpair": "en|zh-CN"},
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        if str(data.get("responseStatus")) != "200":
+            return None
+        translated = (data.get("responseData") or {}).get("translatedText")
+        if not translated:
+            return None
+        if "MYMEMORY WARNING" in translated.upper():
+            return None
+        return translated
+    except Exception:
+        return None
+
+
 async def translate_en_to_zh(text: str) -> str | None:
-    """将英文文本翻译为中文。失败返回 None。"""
+    """将英文文本翻译为中文。优先有道，失败降级到 MyMemory。"""
     if not text or not text.strip():
         return None
-    try:
-        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-            resp = await client.get(
-                MYMEMORY_URL,
-                params={"q": text, "langpair": "en|zh-CN"},
-            )
-            if resp.status_code != 200:
-                return None
-            data = resp.json()
-            # responseStatus 可能为 int 或 str
-            if str(data.get("responseStatus")) != "200":
-                return None
-            translated = (data.get("responseData") or {}).get("translatedText")
-            if not translated:
-                return None
-            # 额度用尽时 MyMemory 会在译文里塞警告文本，需剔除
-            if "MYMEMORY WARNING" in translated.upper():
-                return None
-            return translated
-    except Exception:
-        # 网络异常、解析失败等一律降级
-        return None
+
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        # ① 有道翻译（主）
+        result = await _youdao_translate(text, client)
+        if result:
+            return result
+
+        # ② MyMemory（备）
+        result = await _mymemory_translate(text, client)
+        if result:
+            return result
+
+    return None
